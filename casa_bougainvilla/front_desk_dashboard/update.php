@@ -25,20 +25,20 @@ if ($result && $result->num_rows == 1) {
 
 // Check if the updateid parameter is set
 if (!isset($_GET['updateid']) || empty($_GET['updateid'])) {
-    header("Location: ../front_desk_dashboard.php");
+    header("Location: front_desk_dashboard.php");
     exit();
 }
 
 // Process Form Data if Submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Get form data and trim whitespaces
     $update_id = $_POST['update_id'];
-    $name = $_POST['visitor_name'];
-    $phone_number = $_POST['phone_number'];
-    $email = $_POST['email'];
-    $arrival_time = $_POST['arrival_time'];
-    $departure_time = $_POST['departure_time'];
-    $purpose = $_POST['purpose'];
+    $name = trim($_POST['visitor_name']);
+    $phone_number = trim($_POST['phone_number']);
+    $email = trim($_POST['email']);
+    $arrival_time = trim($_POST['arrival_time']);
+    $departure_time = trim($_POST['departure_time']);
+    $purpose = trim($_POST['purpose']);
 
     // Update the record in the visitors table
     $update_query = "UPDATE visitors SET name=?, phone_number=?, email=?, arrival_time=?, departure_time=?, purpose=? WHERE id=? AND condominium_id=1";
@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $stmt->close();
-    header("Location: ../front_desk_dashboard.php");
+    header("Location: front_desk_dashboard.php");
     exit();
 }
 
@@ -72,7 +72,7 @@ $result_select = $stmt_select->get_result();
 
 // Check if the visitor exists
 if ($result_select->num_rows != 1) {
-    header("Location: ../front_desk_dashboard.php");
+    header("Location: front_desk_dashboard.php");
     exit();
 }
 
@@ -90,7 +90,10 @@ $stmt_select->close();
 function logActivity($user, $action)
 {
     global $mysqli;
-    $insert_query = "INSERT INTO activity_logs (timestamp, user, action, condominium_id) VALUES (CURRENT_TIMESTAMP, ?, ?, 1)";
+
+    $account_number = $_SESSION['account_number'];
+
+    $insert_query = "INSERT INTO activity_logs (timestamp, user, action, condominium_id, account_number) VALUES (CURRENT_TIMESTAMP, ?, ?, 1, $account_number)";
     $stmt = $mysqli->prepare($insert_query);
     $stmt->bind_param("ss", $user, $action);
     $stmt->execute();
@@ -104,10 +107,64 @@ function logActivity($user, $action)
 <head>
     <meta charset="UTF-8">
     <title>Update Visitor</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../../includes/style.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
 
     <style>
+        @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+        
+        html,body{
+            font-family: 'Poppins', sans-serif;
+        }
+        ::selection{
+            color: #fff;
+            background: #084cb4;
+        }
+        .container{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .container .form{
+            background: #fff;
+            padding: 30px 35px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+        .container .form form .form-control{
+            height: 40px;
+            font-size: 15px;
+        }
+        .container .form form .forget-pass{
+            margin: -15px 0 15px 0;
+        }
+        .container .form form .forget-pass a{
+        font-size: 15px;
+        }
+        .container .form form .button{
+            background: #084cb4;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .container .form form .button:hover{
+            background: #084cb4;
+        }
+        .container .form form .link{
+            padding: 5px 0;
+        }
+        .container .form form .link a{
+            color: #084cb4;
+        }
+        .container .login-form form p{
+            font-size: 14px;
+        }
+        .container .row .alert{
+            font-size: 14px;
+        }
         /* Add this to your existing CSS or create a new style block */
         .form-group.departure-label {
             display: none;
@@ -116,10 +173,16 @@ function logActivity($user, $action)
 </head>
 
 <body>
+    <!-- Sidebar Import -->
+    <?php include "../../includes/sidebars/front_desk_sidebar.php" ?>
+    <!-- import prompt styles -->
+    <?php include "../../includes/sidebars/front_desk_sidebar_prompt.php" ?>
+
     <div class="container">
         <div class="row">
             <div class="col-md-4 offset-md-4 form">
-                <form action="update.php?updateid=<?php echo $update_id; ?>" method="post" enctype="multipart/form-data">
+                <form action="update.php?updateid=<?php echo $update_id; ?>" method="post"
+                    enctype="multipart/form-data">
 
                     <h2 class="text-center">Update Visitor</h2>
 
@@ -127,33 +190,39 @@ function logActivity($user, $action)
 
                     <div class="form-group">
                         <label for="username">Visitor Name:</label>
-                        <input type="text" class="form-control" placeholder="Enter Visitor Name" name="visitor_name" value="<?php echo $visitor_name; ?>" autocomplete="off" required>
+                        <input type="text" class="form-control" placeholder="Enter Visitor Name" name="visitor_name"
+                            value="<?php echo $visitor_name; ?>" autocomplete="off" required>
                     </div>
 
                     <div class="form-group">
                         <label>Phone Number:</label>
-                        <input type="number" class="form-control" placeholder="Enter Phone Number:" name="phone_number" value="<?php echo $phone_number; ?>" autocomplete="off" required>
+                        <input type="number" class="form-control" placeholder="Enter Phone Number:" name="phone_number"
+                            value="<?php echo $phone_number; ?>" autocomplete="off" required>
                     </div>
 
                     <div class="form-group">
                         <label>Email:</label>
-                        <input type="text" class="form-control" placeholder="Enter Email:" name="email" value="<?php echo $email; ?>" autocomplete="off" required>
+                        <input type="email" class="form-control" placeholder="Enter Email:" name="email"
+                            value="<?php echo $email; ?>" autocomplete="off" required>
                     </div>
 
                     <div class="form-group">
                         <label>Arrival Time:</label>
-                        <input type="datetime-local" class="form-control" id="arrival_time" name="arrival_time" value="<?php echo date('Y-m-d\TH:i', strtotime($arrival_time)); ?>" required>
+                        <input type="datetime-local" class="form-control" id="arrival_time" name="arrival_time"
+                            value="<?php echo date('Y-m-d\TH:i', strtotime($arrival_time)); ?>" required>
                     </div>
 
                     <!-- Add the departure-label class to the div to hide the label -->
                     <div class="form-group">
                         <label>Departure Time:</label>
-                        <input type="datetime-local" class="form-control" id="departure_time" name="departure_time" value="<?php echo date('Y-m-d\TH:i', strtotime($departure_time)); ?>" />
+                        <input type="datetime-local" class="form-control" id="departure_time" name="departure_time"
+                            value="<?php echo ($departure_time) ? date('Y-m-d\TH:i', strtotime($departure_time)) : ''; ?>" />
                     </div>
 
                     <div class="form-group">
                         <label>Purpose:</label>
-                        <textarea id="purpose" class="form-control" name="purpose" rows="4" required><?php echo $purpose; ?></textarea>
+                        <textarea id="purpose" class="form-control" name="purpose" rows="4"
+                            required><?php echo $purpose; ?></textarea>
                     </div>
 
                     <?php
@@ -163,7 +232,8 @@ function logActivity($user, $action)
                     ?>
 
                     <div class="form-group">
-                        <center><input type="submit" class="form-control button" name="update_submit" value="Update"></button></center>
+                        <center><input type="submit" class="form-control button" name="update_submit"
+                                value="Update"></button></center>
                     </div>
                 </form>
             </div>

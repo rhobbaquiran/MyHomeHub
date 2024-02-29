@@ -1,0 +1,7 @@
+SELECT users.account_number, association.condominium_id, association.role
+FROM users
+LEFT JOIN association ON users.account_number = association.account_number
+UNION
+SELECT association.account_number, association.condominium_id, association.role
+FROM association
+LEFT JOIN users ON users.account_number = association.account_number;
