@@ -469,6 +469,8 @@ if (isset($_GET['reinstate_id'])) {
             Table</button>
 
         <!-- Generate Report button with file logo -->
+        <button class="btn btn-info mx-5 my-3" data-toggle="modal" data-target="#reportModal"><i class='bx bx-file'></i>
+            Generate Report</button>
 
         <!-- Search Bar (updated) -->
         <div class="container mt-3">
