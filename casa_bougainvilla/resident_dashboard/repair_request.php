@@ -15,7 +15,7 @@ if (!isset($_SESSION['username']) || empty($_SESSION['username']) || !isset($_SE
 }
 
 // Check user role and redirect if not authorized
-$allowed_roles = ['Administrator'];
+$allowed_roles = ['Resident'];
 
 if (!in_array($_SESSION['role'], $allowed_roles)) {
     // User is not authorized for this dashboard
@@ -23,14 +23,32 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-//Hardcoded items and quantity data
-$communityInventoryData = array(
-    array('item_quantity' => '5', 'item_name' => 'Broom'),
-    array('item_quantity' => '5', 'item_name' => 'Dustpan'),
-    array('item_quantity' => '3', 'item_name' => 'Door Knob'),
-    array('item_quantity' => '7', 'item_name' => 'Mop'),
-);
+function generateRepairRequests()
+{
+    $requests = array(
+        array(
+            'request_number' => 'Request #1',
+            'requester_name' => 'Jane Doe',
+            'description' => 'Lorem ipsum dolor sit amet',
+            'request_date' => 'January 3, 2024'
+        ),
+        array(
+            'request_number' => 'Request #2',
+            'requester_name' => 'Alice Smith',
+            'description' => 'Consectetur adipiscing elit',
+            'request_date' => 'January 5, 2024'
+        ),
+        // Add more hardcoded data as needed
+    );
+
+    return $requests;
+}
+
+// Usage example:
+$repairRequests = generateRepairRequests();
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +69,7 @@ $communityInventoryData = array(
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community Inventory</title>
+    <title>Repair Request</title>
 
     <style>
         /* Googlefont Poppins CDN Link */
@@ -190,52 +208,49 @@ $communityInventoryData = array(
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
+    <?php include "../../includes/sidebars/resident_sidebar.php" ?>
 
     <div class="container">
-        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Item</a></button>
 
-        <div class="list-of-inventory second-table">
-            <h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Inventory Available</h2>
-            <table id="TableSorter2" class="table col-mx-5">
-                <thead>
-                    <tr>
-                        <th scope="col" style="white-space: nowrap; text-align: center;">
-                            <center>Quantity</center>
-                        </th>
-                        <th scope="col" style="white-space: nowrap; text-align: center;">
-                            <center>Item</center>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    foreach ($communityInventoryData as $data) {
+        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Request</a></button>
 
-                        $quantity = $data['item_quantity'];
-                        $item_name = $data['item_name'];
-                    ?>
-                        <tr>
-                            <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $quantity; ?></center>
-                            </td>
-                            <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $item_name; ?></center>
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+        <h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Repair Request</h2>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Request Details</h5>
+                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis, et venenatis nisi ultricies. Nulla facilisi. Morbi non turpis in purus sodales lacinia. Ut nec velit nec lectus vehicula volutpat.</p>
+                <p class="card-text">Requested by: John Doe</p>
+                <p class="card-text">Request Date: January 1, 2024</p>
+            </div>
         </div>
-    </div>
 
-    <script>
-        $(document).ready(function() {
-            $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
-                theme: 'bootstrap'
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Latest Requests</h5>
+                <ul class="list-group">
+                    <?php foreach ($repairRequests as $request) : ?>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div><?php echo $request['request_number']; ?></div>
+                                    <div>Requested by: <?php echo $request['requester_name']; ?></div>
+                                    <div>Description: <?php echo $request['description']; ?></div>
+                                    <div>Request Date: <?php echo $request['request_date']; ?></div>
+                                </div>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function() {
+                $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
+                    theme: 'bootstrap'
+                });
             });
-        });
-    </script>
+        </script>
 </body>
 
 </html>

@@ -122,7 +122,7 @@
         <img src="../../includes/logo.png" width="100" height="90" id="logo">
         &nbsp;<span class="logo_name">
             <div class="username">
-            <?php echo $_SESSION['username']; ?>
+                <?php echo $_SESSION['username']; ?>
             </div>
         </span>
     </div>
@@ -161,6 +161,24 @@
             <a href="account_payment_history.php">
                 <i class='bx bx-history'></i>
                 <span class="link_name">Account Payment History</span>
+            </a>
+        </li>
+        <li>
+            <a href="community_budget.php">
+                <i class='bx bx-dollar'></i>
+                <span class="link_name">Budget of the Community</span>
+            </a>
+        </li>
+        <li>
+            <a href="community_inventory.php">
+                <i class='bx bx-archive'></i>
+                <span class="link_name">Budget of the Community</span>
+            </a>
+        </li>
+        <li>
+            <a href="repair_request.php">
+                <i class='bx bx-wrench'></i>
+                <span class="link_name">Repair Request</span>
             </a>
         </li>
         <li>

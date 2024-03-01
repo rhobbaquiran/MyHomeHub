@@ -23,7 +23,7 @@ if (isset($_POST['logout'])) {
 }
 
 // Check user role and redirect if not authorized
-$allowed_roles = ['Administrator'];
+$allowed_roles = ['Resident'];
 
 if (!in_array($_SESSION['role'], $allowed_roles)) {
     // User is not authorized for this dashboard
@@ -201,91 +201,11 @@ foreach ($communityBudgetData as $data) {
 </head>
 
 <body>
-    <div class="sidebar">
-        <div class="logo-details">
-            <img src="../../includes/logo.png" width="100" height="90" id="logo">
-            &nbsp;<span class="logo_name">
-                <div class="username"><?php echo $_SESSION['username']; ?></div>
-            </span>
-        </div>
-        <ul class="nav-links">
-            <!--<li>
-                <a href="profile.php">
-                <i class='bx bx-user' class="active"></i>
-                <span class="link_name">Profile</span>
-                </a>
-            </li>-->
-            <li>
-                <a href="units.php">
-                    <i class='bx bx-grid-alt' class="active"></i>
-                    <span class="link_name">Units</span>
-                </a>
-            </li>
-            <li>
-                <a href="../administrator_dashboard.php">
-                    <i class='bx bx-group' class="active"></i>
-                    <span class="link_name">Residents List</span>
-                </a>
-            </li>
-            <li>
-                <a href="transactions.php">
-                    <i class='bx bx-dollar' class="active"></i>
-                    <span class="link_name">Residents' Bills</span>
-                </a>
-            </li>
-            <li>
-                <a href="proof_of_payments.php">
-                    <i class='bx bx-camera' class="active"></i>
-                    <span class="link_name">Residents' Payments</span>
-                </a>
-            </li>
-            <li>
-                <a href="statement_of_account.php">
-                    <i class='bx bx-id-card' class="active"></i>
-                    <span class="link_name">Statement of Account</span>
-                </a>
-            </li>
-            <li>
-                <a href="account_payment_history.php">
-                    <i class='bx bx-history'></i>
-                    <span class="link_name">Account Payment History</span>
-                </a>
-            </li>
-            <li>
-                <a href="community_budget.php">
-                    <i class='bx bx-dollar' class="active"></i>
-                    <span class="link_name">Budget of the Community</span>
-                </a>
-            </li>
-            <li>
-                <a href="community_inventory.php">
-                    <i class='bx bx-archive' class="active"></i>
-                    <span class="link_name">Inventory Available</span>
-                </a>
-            </li>
-            <li>
-                <a href="employees.php">
-                    <i class='bx bx-file' class="active"></i>
-                    <span class="link_name">Front Desks List</span>
-                </a>
-            </li>
-            <li>
-                <a href="activitylogs.php">
-                    <i class='bx bx-list-ul'></i>
-                    <span class="link_name">Activity Logs</span>
-                </a>
-            </li>
-            <li>
-                <a href="../../logout.php?logout=true">
-                    <i class='bx bx-log-out'></i>
-                    <span class="link_name">Log out</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+    <!-- Sidebar Import -->
+    <?php include "../../includes/sidebars/resident_sidebar.php" ?>
 
     <div class="container">
-        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Budget</a></button>
+        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Donate Budget</a></button>
 
         <!-- Community Budget table -->
         <div class="list-of-budget second-table">

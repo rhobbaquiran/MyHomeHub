@@ -170,17 +170,23 @@
             </a>
         </li>
         <li>
-                <a href="community_budget.php">
+            <a href="community_budget.php">
                 <i class='bx bx-dollar' class="active"></i>
                 <span class="link_name">Budget of the Community</span>
-                </a>
-            </li>
-            <li>
-                <a href="community_inventory.php">
+            </a>
+        </li>
+        <li>
+            <a href="community_inventory.php">
                 <i class='bx bx-archive' class="active"></i>
                 <span class="link_name">Inventory Available</span>
-                </a>
-            </li>
+            </a>
+        </li>
+        <li>
+            <a href="repair_request.php">
+                <i class='bx bx-wrench' class="active"></i>
+                <span class="link_name">Repair Request</span>
+            </a>
+        </li>
         <li>
             <a href="employees.php">
                 <i class='bx bx-file' class="active"></i>

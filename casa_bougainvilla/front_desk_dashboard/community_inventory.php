@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 
 // Include the database connection file
@@ -14,16 +14,8 @@ if (!isset($_SESSION['username']) || empty($_SESSION['username']) || !isset($_SE
     exit();
 }
 
-// Logout functionality
-if (isset($_POST['logout'])) {
-    session_unset(); // Unset all session variables
-    session_destroy(); // Destroy the session
-    header("Location: ../../index.php"); // Redirect to the login page after logout
-    exit();
-}
-
 // Check user role and redirect if not authorized
-$allowed_roles = ['Administrator'];
+$allowed_roles = ['Front Desk'];
 
 if (!in_array($_SESSION['role'], $allowed_roles)) {
     // User is not authorized for this dashboard
@@ -31,19 +23,13 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-// Hardcoded community budget data
-$communityBudgetData = array(
-    array('category' => 'Maintenance', 'budget_amount' => 5000),
-    array('category' => 'Utilities', 'budget_amount' => 3000),
-    array('category' => 'Security', 'budget_amount' => 2000)
+//Hardcoded items and quantity data
+$communityInventoryData = array(
+    array('item_quantity' => '5', 'item_name' => 'Broom'),
+    array('item_quantity' => '5', 'item_name' => 'Dustpan'),
+    array('item_quantity' => '3', 'item_name' => 'Door Knob'),
+    array('item_quantity' => '7', 'item_name' => 'Mop'),
 );
-
-// Calculate total budget amount
-$totalBudgetAmount = 0;
-foreach ($communityBudgetData as $data) {
-    $totalBudgetAmount += $data['budget_amount'];
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -62,8 +48,10 @@ foreach ($communityBudgetData as $data) {
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Current Budget of the Community</title>
+    <title>Community Inventory</title>
 
     <style>
         /* Googlefont Poppins CDN Link */
@@ -201,134 +189,42 @@ foreach ($communityBudgetData as $data) {
 </head>
 
 <body>
-    <div class="sidebar">
-        <div class="logo-details">
-            <img src="../../includes/logo.png" width="100" height="90" id="logo">
-            &nbsp;<span class="logo_name">
-                <div class="username"><?php echo $_SESSION['username']; ?></div>
-            </span>
-        </div>
-        <ul class="nav-links">
-            <!--<li>
-                <a href="profile.php">
-                <i class='bx bx-user' class="active"></i>
-                <span class="link_name">Profile</span>
-                </a>
-            </li>-->
-            <li>
-                <a href="units.php">
-                    <i class='bx bx-grid-alt' class="active"></i>
-                    <span class="link_name">Units</span>
-                </a>
-            </li>
-            <li>
-                <a href="../administrator_dashboard.php">
-                    <i class='bx bx-group' class="active"></i>
-                    <span class="link_name">Residents List</span>
-                </a>
-            </li>
-            <li>
-                <a href="transactions.php">
-                    <i class='bx bx-dollar' class="active"></i>
-                    <span class="link_name">Residents' Bills</span>
-                </a>
-            </li>
-            <li>
-                <a href="proof_of_payments.php">
-                    <i class='bx bx-camera' class="active"></i>
-                    <span class="link_name">Residents' Payments</span>
-                </a>
-            </li>
-            <li>
-                <a href="statement_of_account.php">
-                    <i class='bx bx-id-card' class="active"></i>
-                    <span class="link_name">Statement of Account</span>
-                </a>
-            </li>
-            <li>
-                <a href="account_payment_history.php">
-                    <i class='bx bx-history'></i>
-                    <span class="link_name">Account Payment History</span>
-                </a>
-            </li>
-            <li>
-                <a href="community_budget.php">
-                    <i class='bx bx-dollar' class="active"></i>
-                    <span class="link_name">Budget of the Community</span>
-                </a>
-            </li>
-            <li>
-                <a href="community_inventory.php">
-                    <i class='bx bx-archive' class="active"></i>
-                    <span class="link_name">Inventory Available</span>
-                </a>
-            </li>
-            <li>
-                <a href="employees.php">
-                    <i class='bx bx-file' class="active"></i>
-                    <span class="link_name">Front Desks List</span>
-                </a>
-            </li>
-            <li>
-                <a href="activitylogs.php">
-                    <i class='bx bx-list-ul'></i>
-                    <span class="link_name">Activity Logs</span>
-                </a>
-            </li>
-            <li>
-                <a href="../../logout.php?logout=true">
-                    <i class='bx bx-log-out'></i>
-                    <span class="link_name">Log out</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+    <!-- Sidebar Import -->
+    <?php include "../../includes/sidebars/front_desk_sidebar.php" ?>
 
     <div class="container">
-        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Budget</a></button>
+        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Item</a></button>
 
-        <!-- Community Budget table -->
-        <div class="list-of-budget second-table">
-            <h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Budget of the Community</h2>
+        <div class="list-of-inventory second-table">
+            <h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Inventory Available</h2>
             <table id="TableSorter2" class="table col-mx-5">
                 <thead>
                     <tr>
                         <th scope="col" style="white-space: nowrap; text-align: center;">
-                            <center>Category</center>
+                            <center>Quantity</center>
                         </th>
                         <th scope="col" style="white-space: nowrap; text-align: center;">
-                            <center>Budget Amount</center>
+                            <center>Item</center>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    foreach ($communityBudgetData as $data) {
-                        // Extract data from the row
-                        $category = $data['category'];
-                        $budget_amount = $data['budget_amount'];
+                    foreach ($communityInventoryData as $data) {
+
+                        $quantity = $data['item_quantity'];
+                        $item_name = $data['item_name'];
                     ?>
                         <tr>
                             <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $category; ?></center>
+                                <center><?php echo $quantity; ?></center>
                             </td>
                             <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $budget_amount; ?></center>
+                                <center><?php echo $item_name; ?></center>
                             </td>
                         </tr>
                     <?php } ?>
                 </tbody>
-                <!-- Total budget amount row -->
-                <tfoot>
-                    <tr>
-                        <td><strong>
-                                <center>Total Budget Amount:</center>
-                            </strong></td>
-                        <td><strong>
-                                <center><?php echo $totalBudgetAmount; ?></center>
-                            </strong></td>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
