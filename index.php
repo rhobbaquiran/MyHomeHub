@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['dashboard_url'] = $dashboard_url;
                 $_SESSION['role'] = $user_role;
                 $_SESSION['account_number'] = $user['account_number'];
+                $_SESSION['condominium_id'] = $user['condominium_id'];
 
                 // Record login activity in activity_logs table
                 $login_user = $user['username'];
