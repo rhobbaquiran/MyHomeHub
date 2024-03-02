@@ -95,6 +95,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['success'] = 'Administrator added successfully.';
         // Log the activity
         logActivity($_SESSION['username'], "Added Administrator: $name");
+
+        // Send suspension notice via email
+        $emailSession = $_SESSION['email'];
+        $temporaryPassword = $_POST['password'];
+        $to = $email; 
+        $subject = "Your Account has been Activated for $condominium";
+        $account_details = "================\n• Account Number: $accountNumber\n• Username: $name\n• Email: $email\n• Password: $temporaryPassword\n• Role: $role\n================\n";
+        $message = "Dear Mr./Ms. $name,\n\nYour account has been activated for $condominium condominium.  Here are the following details: \n\n$account_details\nFor the security of your account, we recommend changing your password immediately by clicking the 'Forgot Password?' link at the Login Page.\n\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$emailSession\n\nRegards,\nMyHomeHub Team";
+        $headers = 'From: adm1nplk2022@yahoo.com'; 
+        
+        // Use mail() function to send the email
+        mail($to, $subject, $message, $headers);
     } else {
         $_SESSION['error'] = 'Error adding Administrator: ' . $stmt->error;
     }

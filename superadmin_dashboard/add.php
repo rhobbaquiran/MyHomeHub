@@ -19,11 +19,6 @@ function logActivity($user, $action)
     $stmt->close();
 }
 
-// Add this code before rendering the HTML form
-$admin_users_query = "SELECT username, account_number FROM users WHERE role = 'Administrator'";
-$admin_users_result = $mysqli->query($admin_users_query);
-$admin_users_exist = $admin_users_result->num_rows > 0;
-
 // Check for form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data and remove whitespaces
@@ -171,21 +166,9 @@ html,body{
                     </div>
 
                     <div class="form-group">
-    <label for="person_of_contact">Person of Contact:</label>
-    <?php if ($admin_users_exist) { ?>
-        <select class="form-control" name="person_of_contact" required>
-            <?php
-            while ($admin_user = $admin_users_result->fetch_assoc()) {
-                $username = $admin_user['username'];
-                $account_number = $admin_user['account_number'];
-                echo "<option value=\"$username\">$username - $account_number</option>";
-            }
-            ?>
-        </select>
-    <?php } else { ?>
-        <input type="text" class="form-control" value="No Person of Contact" readonly>
-    <?php } ?>
-</div>
+                        <label for="">Person of Contact:</label>
+                        <input type="text" class="form-control" placeholder="Enter Person of Contact Name" name="person_of_contact" autocomplete="off" required>
+                    </div>
 
                     <div class="form-group">
                         <label for="">Address:</label>
