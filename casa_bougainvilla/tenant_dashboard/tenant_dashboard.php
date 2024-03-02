@@ -249,7 +249,7 @@ $stmt->close();
                 echo '<thead>';
                 echo '<tr>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Bill Number</center></th>';
-                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Condominium</center></th>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Tenant</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Billing Period Start</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Billing Period End</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Due Date</center></th>';
@@ -299,7 +299,7 @@ $stmt->close();
                                 <center>Bill Number</center>
                             </th>
                             <th scope="col" style="white-space: nowrap; text-align: center;">
-                                <center>Condominium</center>
+                                <center>Tenant</center>
                             </th>
                             <th scope="col" style="white-space: nowrap; text-align: center;">
                                 <center>Billing Period Start</center>
