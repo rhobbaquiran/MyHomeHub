@@ -4,11 +4,6 @@ session_start();
 // Include the database connection file
 include('../../includes/database.php');
 
-// Pagination parameters
-$rowsPerPage = 10;
-$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-$offset = ($page - 1) * $rowsPerPage;
-
 if (!isset($_SESSION['username']) || empty($_SESSION['username']) || !isset($_SESSION['role'])) {
     header("Location: ../../index.php");
     exit();
@@ -23,13 +18,43 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-//Hardcoded items and quantity data
-$communityInventoryData = array(
-    array('item_quantity' => '5', 'item_name' => 'Broom'),
-    array('item_quantity' => '5', 'item_name' => 'Dustpan'),
-    array('item_quantity' => '3', 'item_name' => 'Door Knob'),
-    array('item_quantity' => '7', 'item_name' => 'Mop'),
-);
+// Pagination parameters
+$rowsPerPage = 10;
+$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+$offset = ($page - 1) * $rowsPerPage;
+
+// Calculate the total number of pages
+$totalRows = $mysqli->query("SELECT COUNT(*) as count FROM inventory WHERE condominium_id = 1")->fetch_assoc()['count'];
+$totalPages = ceil($totalRows / $rowsPerPage);
+
+// Process search form submission
+if (isset($_POST['searchButton'])) {
+    $searchInput = isset($_POST['searchInput']) ? trim($_POST['searchInput']) : '';
+
+    if (!empty($searchInput)) {
+        // Use prepared statement to prevent SQL injection
+        $search_query = "SELECT item_name, quantity FROM inventory WHERE item_name LIKE ? AND condominium_id = ?";
+        $searchInput = "%$searchInput%"; // Add wildcards to search pattern
+        $stmt_search = $mysqli->prepare($search_query);
+
+        if (!$stmt_search) {
+            die('Error in prepare statement: ' . $mysqli->error);
+        }
+
+        // Bind parameters
+        $stmt_search->bind_param("si", $searchInput, $_SESSION['condominium_id']);
+        $stmt_search->execute();
+
+        if ($stmt_search->error) {
+            die('Error executing statement: ' . $stmt_search->error);
+        }
+
+        // Get search results
+        $search_result = $stmt_search->get_result();
+        $stmt_search->close();
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -193,9 +218,58 @@ $communityInventoryData = array(
     <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
 
     <div class="container">
-        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Item</a></button>
+        <button class="btn btn-primary mx-5 my-5"><a href="add_item_inventory.php" class="text-light">Add Item</a></button>
+
+        <!-- Search Bar (updated) -->
+        <div class="container mt-3">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <form method="post" action="community_inventory.php">
+                        <div class="input-group">
+                            <input type="text" name="searchInput" class="form-control" placeholder="Search...">
+                            <div class="input-group-append">
+                                <button class="btn btn-success" type="submit" name="searchButton">
+                                    <i class="bi bi-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <div class="list-of-inventory second-table">
+
+            <?php
+            if (isset($search_result) && $search_result->num_rows > 0) {
+                echo '<h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Search Results</h2>';
+                echo '<div class="row">';
+                echo '<table id="TableSorter3" class="table mx-3">';
+                echo '<thead>';
+                echo '<tr>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Quantity</center></th>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Item</center></th>';
+                echo '</tr>';
+                echo '</thead>';
+                echo '<tbody>';
+
+                while ($row = $search_result->fetch_assoc()) {
+                    $item_name = $row['item_name'];
+                    $quantity = $row['quantity'];
+
+                    echo '<tr>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
+                        </tr>';
+                }
+
+                echo '</tbody>';
+                echo '</table>';
+                echo '</div>';
+                echo '</div>';
+            }
+            ?>
+
             <h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Inventory Available</h2>
             <table id="TableSorter2" class="table col-mx-5">
                 <thead>
@@ -210,22 +284,48 @@ $communityInventoryData = array(
                 </thead>
                 <tbody>
                     <?php
-                    foreach ($communityInventoryData as $data) {
+                    // Fetch inventory data from the database
+                    $sql = "SELECT item_name, quantity FROM inventory WHERE condominium_id = {$_SESSION['condominium_id']}";
+                    $query = $mysqli->query($sql);
 
-                        $quantity = $data['item_quantity'];
-                        $item_name = $data['item_name'];
+                    // Loop through the fetched results and display them in table rows
+                    while ($row = $query->fetch_assoc()) {
+                        $item_name = $row['item_name'];
+                        $quantity = $row['quantity'];
+
+                        echo "<tr>";
+                        echo "<td style='white-space: nowrap; text-align: center;'><center>" . $item_name . "</center></td>";
+                        echo "<td style='white-space: nowrap; text-align: center;'><center>" . $quantity . "</center></td>";
+                        echo "</tr>";
+                    }
                     ?>
-                        <tr>
-                            <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $quantity; ?></center>
-                            </td>
-                            <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $item_name; ?></center>
-                            </td>
-                        </tr>
-                    <?php } ?>
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <ul class="pagination justify-content-center">
+                <?php
+                // Calculate the range of pages to display
+                $range = 5; // Number of buttons to display on either side of the current page
+                $start = max(1, $page - $range);
+                $end = min($totalPages, $page + $range);
+
+                // Display previous page link
+                if ($page > 1) {
+                    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page - 1) . '">&laquo;</a></li>';
+                }
+
+                // Display numbered pagination links
+                for ($i = $start; $i <= $end; $i++) {
+                    echo '<li class="page-item ' . ($i == $page ? 'active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+                }
+
+                // Display next page link
+                if ($page < $totalPages) {
+                    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page + 1) . '">&raquo;</a></li>';
+                }
+                ?>
+            </ul>
         </div>
     </div>
 
