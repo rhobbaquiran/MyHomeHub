@@ -146,6 +146,24 @@
             </a>
         </li>
         <li>
+            <a href="community_budget.php">
+                <i class='bx bx-dollar'></i>
+                <span class="link_name">Budget of the Community</span>
+            </a>
+        </li>
+        <li>
+            <a href="community_inventory.php">
+                <i class='bx bx-archive'></i>
+                <span class="link_name">Inventory Available</span>
+            </a>
+        </li>
+        <li>
+            <a href="repair_request.php">
+                <i class='bx bx-wrench'></i>
+                <span class="link_name">Repair Request</span>
+            </a>
+        </li>
+        <li>
             <a href="activitylogs.php">
                 <i class='bx bx-list-ul'></i>
                 <span class="link_name">Activity Logs</span>
