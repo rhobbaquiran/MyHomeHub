@@ -4,11 +4,6 @@ session_start();
 // Include the database connection file
 include('../../includes/database.php');
 
-// Pagination parameters
-$rowsPerPage = 10;
-$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-$offset = ($page - 1) * $rowsPerPage;
-
 if (!isset($_SESSION['username']) || empty($_SESSION['username']) || !isset($_SESSION['role'])) {
     header("Location: ../../index.php");
     exit();
@@ -31,18 +26,113 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-// Hardcoded community budget data
-$communityBudgetData = array(
-    array('category' => 'Maintenance', 'budget_amount' => 5000),
-    array('category' => 'Utilities', 'budget_amount' => 3000),
-    array('category' => 'Security', 'budget_amount' => 2000)
-);
+function logActivity($user, $action)
+{
 
-// Calculate total budget amount
-$totalBudgetAmount = 0;
-foreach ($communityBudgetData as $data) {
-    $totalBudgetAmount += $data['budget_amount'];
+    global $mysqli;
+    $insert_query = "INSERT INTO activity_logs (timestamp, user, action, condominium_id) VALUES (CURRENT_TIMESTAMP, ?, ?, 1)";
+    $stmt = $mysqli->prepare($insert_query);
+    $stmt->bind_param("ss", $user, $action);
+    $stmt->execute();
+    $stmt->close();
 }
+
+// Pagination parameters
+$rowsPerPage = 10;
+$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+$offset = ($page - 1) * $rowsPerPage;
+
+// Calculate the total number of pages
+$totalRows = $mysqli->query("SELECT COUNT(*) as count FROM budget WHERE condominium_id = 1")->fetch_assoc()['count'];
+$totalPages = ceil($totalRows / $rowsPerPage);
+
+// Process search form submission
+if (isset($_POST['searchButton'])) {
+    $searchInput = isset($_POST['searchInput']) ? trim($_POST['searchInput']) : '';
+
+    if (!empty($searchInput)) {
+        // Use prepared statement to prevent SQL injection
+        $search_query = "SELECT * FROM budget WHERE item_name LIKE ? AND condominium_id = ?";
+        $searchInput = "%$searchInput%"; // Add wildcards to search pattern
+        $stmt_search = $mysqli->prepare($search_query);
+
+        if (!$stmt_search) {
+            die('Error in prepare statement: ' . $mysqli->error);
+        }
+
+        // Bind parameters
+        $stmt_search->bind_param("si", $searchInput, $_SESSION['condominium_id']);
+        $stmt_search->execute();
+
+        if ($stmt_search->error) {
+            die('Error executing statement: ' . $stmt_search->error);
+        }
+
+        // Get search results
+        $search_result = $stmt_search->get_result();
+        $stmt_search->close();
+    }
+}
+
+$totalBudgetAmount = 0;
+
+// Soft Delete functionality
+if (isset($_GET['deleteid'])) {
+    $delete_id = $_GET['deleteid'];
+
+    // Soft Delete record in budget table
+    $update_query = "UPDATE budget SET is_deleted = 1 WHERE id = ? AND is_deleted = 0";
+    $stmt_update = $mysqli->prepare($update_query);
+    // To bind param
+    $stmt_update->bind_param("i", $delete_id);
+    $stmt_update->execute();
+
+    // Check for errors during execution
+    if ($stmt_update->error) {
+        die('Error executing update statement: ' . $stmt_update->error);
+    }
+
+    // Check for success
+    if ($stmt_update->affected_rows > 0) {
+        // Get the details before soft deleting
+        $select_query = "SELECT category, amount FROM budget WHERE id = ? AND is_deleted = 1";
+        $stmt_select = $mysqli->prepare($select_query);
+        $stmt_select->bind_param("i", $delete_id);
+        $stmt_select->execute();
+        $stmt_select->bind_result($item_name, $quantity);
+        $stmt_select->fetch();
+        $stmt_select->close();
+
+        $_SESSION['success'] = 'Budget Category deleted successfully.';
+        // Log the activity with the condominium_id
+        //logActivity($_SESSION['username'], "Deleted budget category: $category,  Amount: $amount";
+        logActivity($_SESSION['username'], "Deleted Budget Category: $category, $amount");
+    } else {
+        $_SESSION['error'] = 'Error deleting a budget category: ' . $stmt_update->error;
+    }
+
+    $stmt_update->close();
+
+    header("Location: community_budget.php");
+    exit();
+}
+
+// Pagination parameters
+$results_per_page = 10;  // Number of results per page
+$current_page = isset($_GET['page']) ? $_GET['page'] : 1;  // Get the current page number
+$start_from = ($current_page - 1) * $results_per_page;
+
+// Calculate the total number of pages
+$totalRows = $mysqli->query("SELECT COUNT(*) as count FROM budget WHERE condominium_id = {$_SESSION['condominium_id']} AND is_deleted = 0")->fetch_assoc()['count'];
+$totalPages = ceil($totalRows / $results_per_page);
+
+// Fetch budget data from the database with pagination
+$sql = "SELECT * FROM budget WHERE is_deleted = 0 AND condominium_id = ? LIMIT ?, ?";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("iii", $_SESSION['condominium_id'], $start_from, $results_per_page);
+$stmt->execute();
+$query_result = $stmt->get_result();
+$stmt->close();
 
 ?>
 
@@ -194,6 +284,12 @@ foreach ($communityBudgetData as $data) {
             /* White background for odd rows */
         }
 
+        tfoot {
+            font-weight: bold;
+            height: 50px;
+            white-space: nowrap;
+        }
+
         .nav-links a span {
             font-weight: bold;
         }
@@ -205,10 +301,64 @@ foreach ($communityBudgetData as $data) {
     <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
 
     <div class="container">
-        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Budget</a></button>
+        <button class="btn btn-primary mx-5 my-5"><a href="add_budget.php" class="text-light">Add Budget</a></button>
+
+        <!-- Search Bar (updated) -->
+        <div class="container mt-3">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <form method="post" action="community_budget.php">
+                        <div class="input-group">
+                            <input type="text" name="searchInput" class="form-control" placeholder="Search...">
+                            <div class="input-group-append">
+                                <button class="btn btn-success" type="submit" name="searchButton">
+                                    <i class="bi bi-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div><br>
 
         <!-- Community Budget table -->
         <div class="list-of-budget second-table">
+
+            <?php
+            if (isset($search_result) && $search_result->num_rows > 0) {
+                echo '<h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Search Results</h2>';
+                echo '<div class="row">';
+                echo '<table id="TableSorter3" class="table mx-3">';
+                echo '<thead>';
+                echo '<tr>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Category</center></th>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Budget Amount</center></th>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
+                echo '</tr>';
+                echo '</thead>';
+                echo '<tbody>';
+
+                while ($row = $search_result->fetch_assoc()) {
+                    $id = $row['id'];
+                    $category = $row['category'];
+                    $amount = $row['amount'];
+
+                    echo '<tr>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $category . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $amount . '</center></td>
+                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">
+                        <button class="btn btn-primary"><a href="update_budget.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
+                        </tr>';
+                }
+
+                echo '</tbody>';
+                echo '</table>';
+                echo '</div>';
+                echo '</div>';
+            }
+            ?>
+
             <h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Budget of the Community</h2>
             <table id="TableSorter2" class="table col-mx-5">
                 <thead>
@@ -219,42 +369,84 @@ foreach ($communityBudgetData as $data) {
                         <th scope="col" style="white-space: nowrap; text-align: center;">
                             <center>Budget Amount</center>
                         </th>
+                        <th scope="col" style="white-space: nowrap; text-align: center;">
+                            <center>Action</center>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    foreach ($communityBudgetData as $data) {
-                        // Extract data from the row
-                        $category = $data['category'];
-                        $budget_amount = $data['budget_amount'];
+                    // Fetch budget data from the database
+                    $sql = "SELECT * FROM budget WHERE is_deleted = 0 AND condominium_id = {$_SESSION['condominium_id']}";
+                    $query = $mysqli->query($sql);
+
+                    // Loop through the fetched results and display them in table rows
+                    while ($row = $query->fetch_assoc()) {
+                        $id = $row['id'];
+                        $category = $row['category'];
+                        $amount = $row['amount'];
+
+                        $totalBudgetAmount += $amount;
+
+                        echo '<tr>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $category . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . number_format($amount, 2) . '</center></td>
+                        <td class="action-column" style="text-align: center;">
+                        <button class="btn btn-primary"><a href="update_budget.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
+                        </td>
+                        </tr>';
+                    }
                     ?>
-                        <tr>
-                            <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $category; ?></center>
-                            </td>
-                            <td style="white-space: nowrap; text-align: center;">
-                                <center><?php echo $budget_amount; ?></center>
-                            </td>
-                        </tr>
-                    <?php } ?>
                 </tbody>
-                <!-- Total budget amount row -->
                 <tfoot>
                     <tr>
-                        <td><strong>
-                                <center>Total Budget Amount:</center>
-                            </strong></td>
-                        <td><strong>
-                                <center><?php echo $totalBudgetAmount; ?></center>
-                            </strong></td>
+                        <th colspan="1" style="text-align: center;">Total Budget Amount:</th>
+                        <th style="text-align: center;"><?php echo number_format($totalBudgetAmount, 2); ?></th>
+                        <th></th>
                     </tr>
                 </tfoot>
             </table>
+
+            <!-- Pagination -->
+            <ul class="pagination justify-content-center">
+                <?php
+                // Calculate the range of pages to display
+                $range = 5; // Number of buttons to display on either side of the current page
+                $start = max(1, $page - $range);
+                $end = min($totalPages, $page + $range);
+
+                // Display previous page link
+                if ($page > 1) {
+                    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page - 1) . '">&laquo;</a></li>';
+                }
+
+                // Display numbered pagination links
+                for ($i = $start; $i <= $end; $i++) {
+                    echo '<li class="page-item ' . ($i == $page ? 'active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+                }
+
+                // Display next page link
+                if ($page < $totalPages) {
+                    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page + 1) . '">&raquo;</a></li>';
+                }
+                ?>
+            </ul>
         </div>
     </div>
 
     <script>
         $(document).ready(function() {
+            // Function to handle delete button click event
+            $('.delete-item').click(function() {
+                var id = $(this).data('id');
+                if (confirm("Are you sure you want to delete this item?")) {
+                    // If user confirms, redirect to delete endpoint with item ID
+                    window.location = "community_budget.php?deleteid=" + id;
+                }
+            });
+
+            // Initialize table sorting
             $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
                 theme: 'bootstrap'
             });
