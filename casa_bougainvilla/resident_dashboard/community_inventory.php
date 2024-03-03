@@ -219,7 +219,7 @@ if (isset($_POST['searchButton'])) {
     <?php include "../../includes/sidebars/resident_sidebar.php" ?>
 
     <div class="container">
-        <button class="btn btn-primary mx-5 my-5"><a href="add_item_inventory.php" class="text-light">Request Item</a></button>
+        <button class="btn btn-primary mx-5 my-5"><a href="request_item_inventory.php" class="text-light">Request Item</a></button>
 
         <!-- Search Bar (updated) -->
         <div class="container mt-3">
