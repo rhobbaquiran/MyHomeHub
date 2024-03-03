@@ -19,6 +19,26 @@ function logActivity($user, $action)
     $stmt->close();
 }
 
+// Fetch data
+$query = "SELECT condominiums.id, condominiums.person_of_contact FROM condominiums
+            LEFT JOIN users
+            ON condominiums.person_of_contact = users.username
+            WHERE condominiums.id = ?";
+
+$stmt = $mysqli->prepare($query);
+$stmt->bind_param("i", $_SESSION['condominium_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $person_of_contact = $row['person_of_contact'];
+} else {
+    $_SESSION['error'] = 'No data found for the given condominium ID.';
+    header("Location: community_inventory.php");
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data and remove whitespaces
     $item_name = trim($_POST['item']);
@@ -48,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Send email notification
     $username = $_SESSION['username'];
     $subject = 'Item Request Notification';
-    $message = "Dear Mr./Ms. Contact Person,\n\nYou have received a request for the item: $item_name. Quantity: $quantity\n\n\nFrom,\n$username";
+    $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a request for the item: $item_name. Quantity: $quantity\n\n\nFrom,\n$username";
     $headers = 'From: adm1nplk2022@yahoo.com';
 
     // Use mail() function to send the email
