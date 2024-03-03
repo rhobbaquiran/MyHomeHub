@@ -54,8 +54,6 @@ if (isset($_POST['searchButton'])) {
         $stmt_search->close();
     }
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -250,6 +248,7 @@ if (isset($_POST['searchButton'])) {
                 echo '<tr>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Quantity</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Item</center></th>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Activity</center></th>';
                 echo '</tr>';
                 echo '</thead>';
                 echo '<tbody>';

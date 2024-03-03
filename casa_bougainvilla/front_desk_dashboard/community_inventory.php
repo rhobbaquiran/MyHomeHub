@@ -23,7 +23,17 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-// Pagination parameters
+function logActivity($user, $action)
+{
+
+    global $mysqli;
+    $insert_query = "INSERT INTO activity_logs (timestamp, user, action, condominium_id) VALUES (CURRENT_TIMESTAMP, ?, ?, 1)";
+    $stmt = $mysqli->prepare($insert_query);
+    $stmt->bind_param("ss", $user, $action);
+    $stmt->execute();
+    $stmt->close();
+}
+
 $rowsPerPage = 10;
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 $offset = ($page - 1) * $rowsPerPage;
@@ -59,6 +69,65 @@ if (isset($_POST['searchButton'])) {
         $stmt_search->close();
     }
 }
+
+// Soft Delete functionality
+if (isset($_GET['deleteid'])) {
+    $delete_id = $_GET['deleteid'];
+
+    // Soft Delete record in inventory table
+    $update_query = "UPDATE inventory SET is_deleted = 1 WHERE id = ? AND is_deleted = 0";
+    $stmt_update = $mysqli->prepare($update_query);
+    // To bind param
+    $stmt_update->bind_param("i", $delete_id);
+    $stmt_update->execute();
+
+    // Check for errors during execution
+    if ($stmt_update->error) {
+        die('Error executing update statement: ' . $stmt_update->error);
+    }
+
+    // Check for success
+    if ($stmt_update->affected_rows > 0) {
+        // Get the details before soft deleting
+        $select_query = "SELECT item_name, quantity FROM inventory WHERE id = ? AND is_deleted = 1";
+        $stmt_select = $mysqli->prepare($select_query);
+        $stmt_select->bind_param("i", $delete_id);
+        $stmt_select->execute();
+        $stmt_select->bind_result($item_name, $quantity);
+        $stmt_select->fetch();
+        $stmt_select->close();
+
+        $_SESSION['success'] = 'Item deleted successfully.';
+        // Log the activity with the condominium_id
+        //logActivity($_SESSION['username'], "Deleted Item $item_name,  Quantity: $quantity";
+        logActivity($_SESSION['username'], "Deleted Item: $item_name, $quantity");
+    } else {
+        $_SESSION['error'] = 'Error deleting an item: ' . $stmt_update->error;
+    }
+
+    $stmt_update->close();
+
+    // Redirect back to community_inventory.php after deletion
+    header("Location: community_inventory.php");
+    exit();
+}
+
+// Pagination parameters
+$results_per_page = 10;  // Number of results per page
+$current_page = isset($_GET['page']) ? $_GET['page'] : 1;  // Get the current page number
+$start_from = ($current_page - 1) * $results_per_page;
+
+// Calculate the total number of pages
+$totalRows = $mysqli->query("SELECT COUNT(*) as count FROM inventory WHERE condominium_id = {$_SESSION['condominium_id']} AND is_deleted = 0")->fetch_assoc()['count'];
+$totalPages = ceil($totalRows / $results_per_page);
+
+// Fetch inventory data from the database with pagination
+$sql = "SELECT * FROM inventory WHERE is_deleted = 0 AND condominium_id = ? LIMIT ?, ?";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("iii", $_SESSION['condominium_id'], $start_from, $results_per_page);
+$stmt->execute();
+$query_result = $stmt->get_result();
+$stmt->close();
 
 ?>
 
@@ -269,6 +338,7 @@ if (isset($_POST['searchButton'])) {
                         <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
                         <td class="action-column" style="text-align: center;">
                         <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
                         </tr>';
                 }
 
@@ -297,7 +367,7 @@ if (isset($_POST['searchButton'])) {
                 <tbody>
                     <?php
                     // Fetch inventory data from the database
-                    $sql = "SELECT * FROM inventory WHERE condominium_id = {$_SESSION['condominium_id']}";
+                    $sql = "SELECT * FROM inventory WHERE is_deleted = 0 AND condominium_id = {$_SESSION['condominium_id']}";
                     $query = $mysqli->query($sql);
 
                     // Loop through the fetched results and display them in table rows
@@ -311,6 +381,7 @@ if (isset($_POST['searchButton'])) {
                         <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
                         <td class="action-column" style="text-align: center;">
                         <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
                         </td>
                         </tr>';
                     }
@@ -347,6 +418,16 @@ if (isset($_POST['searchButton'])) {
 
     <script>
         $(document).ready(function() {
+            // Function to handle delete button click event
+            $('.delete-item').click(function() {
+                var id = $(this).data('id');
+                if (confirm("Are you sure you want to delete this item?")) {
+                    // If user confirms, redirect to delete endpoint with item ID
+                    window.location = "community_inventory.php?deleteid=" + id;
+                }
+            });
+
+            // Initialize table sorting
             $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
                 theme: 'bootstrap'
             });
