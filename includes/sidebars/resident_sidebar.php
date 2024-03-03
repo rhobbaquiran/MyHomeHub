@@ -172,7 +172,7 @@
         <li>
             <a href="community_inventory.php">
                 <i class='bx bx-archive'></i>
-                <span class="link_name">Budget of the Community</span>
+                <span class="link_name">Inventory Available</span>
             </a>
         </li>
         <li>

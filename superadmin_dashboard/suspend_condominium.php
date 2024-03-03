@@ -101,8 +101,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $emailSession = $_SESSION['email'];
             $subject = 'Condominium Suspension Notice';
             $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYour Condominium has been suspended due to $chosen_reason.\n\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$emailSession\n\nRegards,\nMyHomeHub Team";
-            $headers = 'From: adm1nplk2022@yahoo.com'; 
-            
+            $headers = 'From: adm1nplk2022@yahoo.com';
+
             // Use mail() function to send the email
             mail($to, $subject, $message, $headers);
         } else {
@@ -130,57 +130,72 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <style>
         @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
-html,body{
-    font-family: 'Poppins', sans-serif;
-}
-::selection{
-    color: #fff;
-    background: #084cb4;
-}
-.container{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-.container .form{
-    background: #fff;
-    padding: 30px 35px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-}
-.container .form form .form-control{
-    height: 40px;
-    font-size: 15px;
-}
-.container .form form .forget-pass{
-    margin: -15px 0 15px 0;
-}
-.container .form form .forget-pass a{
-   font-size: 15px;
-}
-.container .form form .button{
-    background: #084cb4;
-    color: #fff;
-    font-size: 17px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-.container .form form .button:hover{
-    background: #084cb4;
-}
-.container .form form .link{
-    padding: 5px 0;
-}
-.container .form form .link a{
-    color: #084cb4;
-}
-.container .login-form form p{
-    font-size: 14px;
-}
-.container .row .alert{
-    font-size: 14px;
-}
+
+        html,
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::selection {
+            color: #fff;
+            background: #084cb4;
+        }
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .container .form {
+            background: #fff;
+            padding: 30px 35px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        .container .form form .form-control {
+            height: 40px;
+            font-size: 15px;
+        }
+
+        .container .form form .forget-pass {
+            margin: -15px 0 15px 0;
+        }
+
+        .container .form form .forget-pass a {
+            font-size: 15px;
+        }
+
+        .container .form form .button {
+            background: #084cb4;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .container .form form .button:hover {
+            background: #084cb4;
+        }
+
+        .container .form form .link {
+            padding: 5px 0;
+        }
+
+        .container .form form .link a {
+            color: #084cb4;
+        }
+
+        .container .login-form form p {
+            font-size: 14px;
+        }
+
+        .container .row .alert {
+            font-size: 14px;
+        }
+
         /* Add this to your existing CSS or create a new style block */
         .form-group.departure-label {
             display: none;

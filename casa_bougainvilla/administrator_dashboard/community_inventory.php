@@ -33,7 +33,7 @@ if (isset($_POST['searchButton'])) {
 
     if (!empty($searchInput)) {
         // Use prepared statement to prevent SQL injection
-        $search_query = "SELECT item_name, quantity FROM inventory WHERE item_name LIKE ? AND condominium_id = ?";
+        $search_query = "SELECT * FROM inventory WHERE item_name LIKE ? AND condominium_id = ?";
         $searchInput = "%$searchInput%"; // Add wildcards to search pattern
         $stmt_search = $mysqli->prepare($search_query);
 
@@ -207,6 +207,25 @@ if (isset($_POST['searchButton'])) {
             /* White background for odd rows */
         }
 
+        /* Additional style for action buttons */
+        .action-buttons {
+            text-align: center;
+            /* Center the buttons within the padded area */
+            display: flex;
+            justify-content: space-between;
+            /* Add space between buttons */
+        }
+
+        .action-buttons button {
+            margin-right: 5px;
+        }
+
+        th.action-column,
+        td.action-column {
+            width: 250px;
+            /* Adjust the width as needed */
+        }
+
         .nav-links a span {
             font-weight: bold;
         }
@@ -249,17 +268,21 @@ if (isset($_POST['searchButton'])) {
                 echo '<tr>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Quantity</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Item</center></th>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
                 echo '</tr>';
                 echo '</thead>';
                 echo '<tbody>';
 
                 while ($row = $search_result->fetch_assoc()) {
+                    $id = $row['id'];
                     $item_name = $row['item_name'];
                     $quantity = $row['quantity'];
 
                     echo '<tr>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
+                        <td class="action-column" style="text-align: center;">
+                        <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
                         </tr>';
                 }
 
@@ -280,23 +303,30 @@ if (isset($_POST['searchButton'])) {
                         <th scope="col" style="white-space: nowrap; text-align: center;">
                             <center>Item</center>
                         </th>
+                        <th scope="col" style="white-space: nowrap; text-align: center;">
+                            <center>Action</center>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
                     // Fetch inventory data from the database
-                    $sql = "SELECT item_name, quantity FROM inventory WHERE condominium_id = {$_SESSION['condominium_id']}";
+                    $sql = "SELECT * FROM inventory WHERE condominium_id = {$_SESSION['condominium_id']}";
                     $query = $mysqli->query($sql);
 
                     // Loop through the fetched results and display them in table rows
                     while ($row = $query->fetch_assoc()) {
+                        $id = $row['id'];
                         $item_name = $row['item_name'];
                         $quantity = $row['quantity'];
 
-                        echo "<tr>";
-                        echo "<td style='white-space: nowrap; text-align: center;'><center>" . $item_name . "</center></td>";
-                        echo "<td style='white-space: nowrap; text-align: center;'><center>" . $quantity . "</center></td>";
-                        echo "</tr>";
+                        echo '<tr>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
+                        <td class="action-column" style="text-align: center;">
+                        <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                        </td>
+                        </tr>';
                     }
                     ?>
                 </tbody>
