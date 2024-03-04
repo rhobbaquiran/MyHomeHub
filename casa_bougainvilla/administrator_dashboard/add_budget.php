@@ -139,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="col-md-4 offset-md-4 form">
                 <form action="add_budget.php" method="post" enctype="multipart/form-data">
 
-                    <h2 class="text-center">Add Inventory</h2><br>
+                    <h2 class="text-center">Add Budget</h2><br>
 
                     <div class="form-group">
                         <label for="category">Budget Category:</label>
