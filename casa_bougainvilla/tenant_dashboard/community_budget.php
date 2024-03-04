@@ -18,7 +18,7 @@ if (isset($_POST['logout'])) {
 }
 
 // Check user role and redirect if not authorized
-$allowed_roles = ['Resident'];
+$allowed_roles = ['Tenant'];
 
 if (!in_array($_SESSION['role'], $allowed_roles)) {
     // User is not authorized for this dashboard
@@ -298,7 +298,7 @@ $stmt->close();
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/resident_sidebar.php" ?>
+    <?php include "../../includes/sidebars/tenant_sidebar.php" ?>
 
     <div class="container">
         <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Donate Budget</a></button>
