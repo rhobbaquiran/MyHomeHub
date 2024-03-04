@@ -19,6 +19,16 @@ function logActivity($user, $action)
     $stmt->close();
 }
 
+if (!isset($_GET['rejectid']) || empty($_GET['rejectid'])) {
+    header("Location: reject_repair_request.php");
+    exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $reject_id = $_POST['reject_id'];
+    $rejection_reason = trim($_POST['rejection_reason']);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -123,11 +133,6 @@ function logActivity($user, $action)
                 <form action="add_repair_request.php" method="post" enctype="multipart/form-data">
 
                     <h2 class="text-center">Reject Request</h2><br>
-
-                    <div class="form-group">
-                        <label for="heading">Title:</label>
-                        <input type="text" class="form-control" placeholder="Enter Title" name="heading" autocomplete="off" required>
-                    </div>
 
                     <div class="form-group">
                         <label for="reject_reason">Rejection Reason:</label>

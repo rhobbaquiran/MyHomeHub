@@ -202,6 +202,13 @@ $repairRequests = generateRepairRequests();
         .nav-links a span {
             font-weight: bold;
         }
+
+        .btn-white {
+            background-color: #ffffff;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+
+        }
     </style>
 </head>
 
@@ -210,6 +217,7 @@ $repairRequests = generateRepairRequests();
     <?php include "../../includes/sidebars/front_desk_sidebar.php" ?>
 
     <div class="container">
+        <button class="btn btn-white">White Button</button>
     <h2  class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Repair Request</h2>
     <div class="card">
         <div class="card-body">

@@ -200,6 +200,13 @@ function getStatusLabel($status)
         .nav-links a span {
             font-weight: bold;
         }
+
+        .btn-white {
+            background-color: #ffffff;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+
+        }
     </style>
 </head>
 
@@ -208,39 +215,54 @@ function getStatusLabel($status)
     <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
 
     <div class="container">
+        <button class="btn btn-white">White Button</button>
+
+        <h2 style="font-weight: bold; text-align: center;">Repair Request</h2>
         <div class="card mt-3">
             <div class="card-body">
                 <h5 class="card-title">Active Requests</h5>
                 <ul class="list-group">
-                    <?php while ($row = $query_result->fetch_assoc()) : ?>
+                    <?php
+                    // Iterate through the query result and assign values to variables
+                    while ($row = $query_result->fetch_assoc()) {
+                        $ticket_number = $row['ticket_number'];
+                        $target_unit = $row['target_unit'];
+                        $username = $row['username'];
+                        $date_issued = $row['date_issued'];
+                        $heading = $row['heading'];
+                        $description = $row['description'];
+                        $status = $row['status'];
+                        $date_finished = $row['date_finished'];
+                        $rejection_reason = $row['rejection_reason'];
+                    ?>
                         <li class="list-group-item">
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    <div>Unit Number: <?php echo $row['target_unit']; ?></div>
-                                    <div>Requested by: <?php echo $row['username']; ?></div>
-                                    <div>Date Issued: <?php echo $row['date_issued']; ?></div>
-                                    <div>Title: <?php echo $row['heading']; ?></div>
-                                    <div>Description: <?php echo $row['description']; ?></div>
-                                    <div>Status: <span style="font-weight: bold;"><?php echo getStatusLabel($row['status']); ?></span></div>
-                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $row['date_finished'] === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
-                                    <?php if ($row['status'] == 2) : ?>
-                                        <div>Rejection Reason: <?php echo $row['rejection_reason']; ?></div>
+                                    <!-- Use variables within the HTML -->
+                                    <div>Unit Number: <?php echo $target_unit; ?></div>
+                                    <div>Requested by: <?php echo $username; ?></div>
+                                    <div>Date Issued: <?php echo $date_issued; ?></div>
+                                    <div>Title: <?php echo $heading; ?></div>
+                                    <div>Description: <?php echo $description; ?></div>
+                                    <div>Status: <span style="font-weight: bold;"><?php echo getStatusLabel($status); ?></span></div>
+                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $date_finished === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
+                                    <?php if ($status == 2) : ?>
+                                        <div>Rejection Reason: <?php echo $rejection_reason; ?></div>
                                     <?php endif; ?>
                                 </div>
                                 <div>
                                     <!-- Resolve and Reject Buttons -->
                                     <?php if ($row['status'] == 0) : ?>
-                                        <button class="btn btn-success">Resolve</button>
-                                        <button class="btn btn-danger">Reject</button>
+                                        <button class="btn btn-success"><a href="resolve_repair_request.php?resolveid=<?php echo $ticket_number; ?>" class="text-light">Resolve</a></button>
+                                        <button class="btn btn-danger"><a href="reject_repair_request.php?rejectid=<?php echo $ticket_number; ?>" class="text-light">Reject</a></button>
                                     <?php endif; ?>
                                 </div>
                             </div>
                         </li>
-                    <?php endwhile; ?>
+                    <?php } ?>
                 </ul>
             </div>
         </div>
-    </div>
     </div>
 
     <script>
