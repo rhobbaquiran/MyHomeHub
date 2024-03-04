@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Send email notification
     $username = $_SESSION['username'];
     $subject = 'Item Request Notification';
-    $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a request for the item: $item_name. Quantity: $quantity\n\n\nFrom,\n$username";
+    $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a request for the item: $item_name. Quantity: $quantity\n\n\nFrom,\n$username\nResident of Casa Bougainvilla";
     $headers = 'From: adm1nplk2022@yahoo.com';
 
     // Use mail() function to send the email
