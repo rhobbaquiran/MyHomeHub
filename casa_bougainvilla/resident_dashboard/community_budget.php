@@ -286,7 +286,7 @@ $stmt->close();
 
         tfoot {
             font-weight: bold;
-            height: 50px;
+            height: 40px;
             white-space: nowrap;
         }
 
@@ -390,8 +390,12 @@ $stmt->close();
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan="1" style="text-align: center;">Total Budget Amount:</th>
-                        <th style="text-align: center;"><?php echo number_format($totalBudgetAmount, 2); ?></th>
+                        <th colspan="1" style="text-align: center;">
+                            <span class="font-weight-bold">Total Budget Amount:</span>
+                        </th>
+                        <th style="text-align: center;">
+                            <span class="font-weight-bold"><?php echo number_format($totalBudgetAmount, 2); ?></span>
+                        </th>
                     </tr>
                 </tfoot>
             </table>
