@@ -214,7 +214,7 @@ if (isset($_POST['searchButton'])) {
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/resident_sidebar.php" ?>
+    <?php include "../../includes/sidebars/tenant_sidebar.php" ?>
 
     <div class="container">
         <button class="btn btn-primary mx-5 my-5"><a href="request_item_inventory.php" class="text-light">Request Item</a></button>
