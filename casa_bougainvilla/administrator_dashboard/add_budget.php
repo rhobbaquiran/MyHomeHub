@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($stmt->errno === 0) {
         $_SESSION['success'] = 'Budget added successfully.';
         // Log the activity
-        logActivity($_SESSION['username'], "Added a Category: $item_name,  with Amount: $amount.");
+        logActivity($_SESSION['username'], "Added a Category: $category,  with Amount: $amount.");
     } else {
         $_SESSION['error'] = 'Error adding a Budget Category: ' . $stmt->error;
     }
