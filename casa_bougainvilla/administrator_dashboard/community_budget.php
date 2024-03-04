@@ -99,14 +99,14 @@ if (isset($_GET['deleteid'])) {
         $stmt_select = $mysqli->prepare($select_query);
         $stmt_select->bind_param("i", $delete_id);
         $stmt_select->execute();
-        $stmt_select->bind_result($item_name, $quantity);
+        $stmt_select->bind_result($category, $amount);
         $stmt_select->fetch();
         $stmt_select->close();
 
         $_SESSION['success'] = 'Budget Category deleted successfully.';
         // Log the activity with the condominium_id
         //logActivity($_SESSION['username'], "Deleted budget category: $category,  Amount: $amount";
-        logActivity($_SESSION['username'], "Deleted Budget Category: $category, $amount");
+        logActivity($_SESSION['username'], "Deleted Budget Category: $category, Amount: $amount");
     } else {
         $_SESSION['error'] = 'Error deleting a budget category: ' . $stmt_update->error;
     }
@@ -284,10 +284,28 @@ $stmt->close();
             /* White background for odd rows */
         }
 
+        .action-buttons {
+            text-align: center;
+            /* Center the buttons within the padded area */
+            display: flex;
+            justify-content: space-between;
+            /* Add space between buttons */
+        }
+
+        .action-buttons button {
+            margin-right: 5px;
+        }
+
         tfoot {
             font-weight: bold;
-            height: 50px;
+            height: 40px;
             white-space: nowrap;
+        }
+
+        th.action-column,
+        td.action-column {
+            width: 250px;
+            /* Adjust the width as needed */
         }
 
         .nav-links a span {
@@ -333,7 +351,7 @@ $stmt->close();
                 echo '<tr>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Category</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Budget Amount</center></th>';
-                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
+                echo '<th class="action-column" scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
                 echo '</tr>';
                 echo '</thead>';
                 echo '<tbody>';
@@ -344,11 +362,17 @@ $stmt->close();
                     $amount = $row['amount'];
 
                     echo '<tr>
-                        <td style="white-space: nowrap; text-align: center;"><center>' . $category . '</center></td>
-                        <td style="white-space: nowrap; text-align: center;"><center>' . $amount . '</center></td>
-                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">
-                        <button class="btn btn-primary"><a href="update_budget.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
+                        <td scope="row" style="white-space: nowrap; text-align: center;"><center>' . $category . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . number_format($amount, 2) . '</center></td>
+                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
+
+                    // Update button
+                    echo '<button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>';
+
+                    // Delete button
+                    echo '<button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>';
+
+                    echo '</td>
                         </tr>';
                 }
 
@@ -369,7 +393,7 @@ $stmt->close();
                         <th scope="col" style="white-space: nowrap; text-align: center;">
                             <center>Budget Amount</center>
                         </th>
-                        <th scope="col" style="white-space: nowrap; text-align: center;">
+                        <th class="action-column" scope="col" style="white-space: nowrap; text-align: center;">
                             <center>Action</center>
                         </th>
                     </tr>
@@ -391,10 +415,15 @@ $stmt->close();
                         echo '<tr>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $category . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . number_format($amount, 2) . '</center></td>
-                        <td class="action-column" style="text-align: center;">
-                        <button class="btn btn-primary"><a href="update_budget.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
-                        </td>
+                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
+
+                        // Update button
+                        echo '<button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>';
+
+                        // Delete button
+                        echo '<button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>';
+
+                        echo '</td>
                         </tr>';
                     }
                     ?>
