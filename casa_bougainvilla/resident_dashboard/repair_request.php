@@ -23,29 +23,27 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-function generateRepairRequests()
+// Fetch repair requests from the database
+$sql = "SELECT * FROM service_ticket WHERE username = ? ORDER BY date_issued DESC";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("s", $_SESSION['username']);
+$stmt->execute();
+$query_result = $stmt->get_result();
+
+// Function to get the status label
+function getStatusLabel($status)
 {
-    $requests = array(
-        array(
-            'request_number' => 'Request #1',
-            'requester_name' => 'Jane Doe',
-            'description' => 'Lorem ipsum dolor sit amet',
-            'request_date' => 'January 3, 2024'
-        ),
-        array(
-            'request_number' => 'Request #2',
-            'requester_name' => 'Alice Smith',
-            'description' => 'Consectetur adipiscing elit',
-            'request_date' => 'January 5, 2024'
-        ),
-        // Add more hardcoded data as needed
-    );
-
-    return $requests;
+    switch ($status) {
+        case 0:
+            return "Pending";
+        case 1:
+            return "Resolved";
+        case 2:
+            return "Rejected";
+        default:
+            return "Unknown";
+    }
 }
-
-// Usage example:
-$repairRequests = generateRepairRequests();
 
 ?>
 
@@ -212,45 +210,81 @@ $repairRequests = generateRepairRequests();
 
     <div class="container">
 
-        <button class="btn btn-primary mx-5 my-5"><a href="#" class="text-light">Add Request</a></button>
+        <button class="btn btn-primary mx-5 my-5"><a href="add_repair_request.php" class="text-light">Add Request</a></button>
 
-        <h2 class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Repair Request</h2>
-        <div class="card">
+        <div class="card mt-3">
             <div class="card-body">
-                <h5 class="card-title">Request Details</h5>
-                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis, et venenatis nisi ultricies. Nulla facilisi. Morbi non turpis in purus sodales lacinia. Ut nec velit nec lectus vehicula volutpat.</p>
-                <p class="card-text">Requested by: John Doe</p>
-                <p class="card-text">Request Date: January 1, 2024</p>
+                <h5 class="card-title">Active Requests</h5>
+                <ul class="list-group">
+                    <?php while ($row = $query_result->fetch_assoc()) : ?>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div>Unit Number: <?php echo $row['target_unit']; ?></div>
+                                    <div>Requested by: <?php echo $_SESSION['username']; ?></div>
+                                    <div>Date Issued: <?php echo $row['date_issued']; ?></div>
+                                    <div>Title: <?php echo $row['heading']; ?></div>
+                                    <div>Description: <?php echo $row['description']; ?></div>
+                                    <div>Status: <span style="font-weight: bold;"><?php echo getStatusLabel($row['status']); ?></span></div>
+                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $row['date_finished'] === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
+                                    <?php if ($row['status'] == 2) : ?>
+                                        <div>Rejection Reason: <?php echo $row['rejection_reason']; ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </li>
+                    <?php endwhile; ?>
+                </ul>
             </div>
         </div>
 
         <div class="card mt-3">
             <div class="card-body">
-                <h5 class="card-title">Latest Requests</h5>
+                <h5 class="card-title">History Requests</h5>
                 <ul class="list-group">
                     <?php foreach ($repairRequests as $request) : ?>
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <div><?php echo $request['request_number']; ?></div>
-                                    <div>Requested by: <?php echo $request['requester_name']; ?></div>
-                                    <div>Description: <?php echo $request['description']; ?></div>
-                                    <div>Request Date: <?php echo $request['request_date']; ?></div>
+                        <?php if ($request['status'] == 'Resolved' || $request['status'] == 'Rejected') : ?>
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div>Unit Number: <?php echo $request['target_unit']; ?></div>
+                                        <div>Requested by: <?php echo $request['username']; ?></div>
+                                        <div>Date Issued: <?php echo $row['date_issued']; ?></div>
+                                        <div>Title: <?php echo $row['heading']; ?></div>
+                                        <div>Description: <?php echo $request['description']; ?></div>
+                                        <div>Date Finished: <?php echo $request['date_finished'] === '0000-00-00' ? "<strong>Pending</strong>" : $request['date_finished']; ?></div>
+                                        <div>Status: <?php echo $request['status']; ?></div>
+                                        <?php if ($request['status'] == 'Rejected') : ?>
+                                            <div>Rejection Reason: <?php echo $request['rejection_reason']; ?></div>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
+                            </li>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </ul>
             </div>
         </div>
+    </div>
 
-        <script>
-            $(document).ready(function() {
-                $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
-                    theme: 'bootstrap'
-                });
+
+    <script>
+        function toggleDetails(ticketNumber) {
+            var details = document.getElementById('details_' + ticketNumber);
+            details.classList.toggle('active');
+            if (details.style.display === "block") {
+                details.style.display = "none";
+            } else {
+                details.style.display = "block";
+            }
+        }
+
+        $(document).ready(function() {
+            $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
+                theme: 'bootstrap'
             });
-        </script>
+        });
+    </script>
 </body>
 
 </html>

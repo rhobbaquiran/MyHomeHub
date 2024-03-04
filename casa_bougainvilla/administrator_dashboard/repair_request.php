@@ -23,28 +23,26 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-function generateRepairRequests() {
-    $requests = array(
-        array(
-            'request_number' => 'Request #1',
-            'requester_name' => 'Jane Doe',
-            'description' => 'Lorem ipsum dolor sit amet',
-            'request_date' => 'January 3, 2024'
-        ),
-        array(
-            'request_number' => 'Request #2',
-            'requester_name' => 'Alice Smith',
-            'description' => 'Consectetur adipiscing elit',
-            'request_date' => 'January 5, 2024'
-        ),
-        // Add more hardcoded data as needed
-    );
+$sql = "SELECT * FROM service_ticket WHERE condominium_id = ? AND status = 0 ORDER BY date_issued DESC";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("s", $_SESSION['condominium_id']); // Assuming condominium_id is stored in $_SESSION['condominium_id']
+$stmt->execute();
+$query_result = $stmt->get_result();
 
-    return $requests;
+// Function to get the status label
+function getStatusLabel($status)
+{
+    switch ($status) {
+        case 0:
+            return "Pending";
+        case 1:
+            return "Resolved";
+        case 2:
+            return "Rejected";
+        default:
+            return "Unknown";
+    }
 }
-
-// Usage example:
-$repairRequests = generateRepairRequests();
 
 ?>
 
@@ -210,39 +208,39 @@ $repairRequests = generateRepairRequests();
     <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
 
     <div class="container">
-    <h2  class="mt-4 mb-3" style="white-space: nowrap; text-align: center;">Repair Request</h2>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Request Details</h5>
-            <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis, et venenatis nisi ultricies. Nulla facilisi. Morbi non turpis in purus sodales lacinia. Ut nec velit nec lectus vehicula volutpat.</p>
-            <p class="card-text">Requested by: John Doe</p>
-            <p class="card-text">Request Date: January 1, 2024</p>
-        </div>
-    </div>
-
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Latest Requests</h5>
-            <ul class="list-group">
-                <?php foreach ($repairRequests as $request): ?>
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <div><?php echo $request['request_number']; ?></div>
-                                <div>Requested by: <?php echo $request['requester_name']; ?></div>
-                                <div>Description: <?php echo $request['description']; ?></div>
-                                <div>Request Date: <?php echo $request['request_date']; ?></div>
-                            </div>
-                            <div class="d-flex">
-                                <div class="ml-auto">
-                                    <button class="btn btn-success mark-resolved" data-request-id="<?php echo $request['request_number']; ?>">Marked as Resolved</button>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Active Requests</h5>
+                <ul class="list-group">
+                    <?php while ($row = $query_result->fetch_assoc()) : ?>
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div>Unit Number: <?php echo $row['target_unit']; ?></div>
+                                    <div>Requested by: <?php echo $row['username']; ?></div>
+                                    <div>Date Issued: <?php echo $row['date_issued']; ?></div>
+                                    <div>Title: <?php echo $row['heading']; ?></div>
+                                    <div>Description: <?php echo $row['description']; ?></div>
+                                    <div>Status: <span style="font-weight: bold;"><?php echo getStatusLabel($row['status']); ?></span></div>
+                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $row['date_finished'] === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
+                                    <?php if ($row['status'] == 2) : ?>
+                                        <div>Rejection Reason: <?php echo $row['rejection_reason']; ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <!-- Resolve and Reject Buttons -->
+                                    <?php if ($row['status'] == 0) : ?>
+                                        <button class="btn btn-success">Resolve</button>
+                                        <button class="btn btn-danger">Reject</button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                        </div>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+                        </li>
+                    <?php endwhile; ?>
+                </ul>
+            </div>
         </div>
+    </div>
     </div>
 
     <script>
