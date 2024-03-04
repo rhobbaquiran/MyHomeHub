@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 03, 2024 at 04:14 PM
+-- Generation Time: Mar 04, 2024 at 06:08 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -642,7 +642,14 @@ INSERT INTO `activity_logs` (`id`, `timestamp`, `user`, `action`, `condominium_i
 (1367, '2024-03-03 15:04:55', 'Dwayne Johnson', 'Logged in', 1, 1123456786),
 (1368, '2024-03-03 15:11:24', 'Dwayne Johnson', 'Added an Item: Lamp', 1, 0),
 (1369, '2024-03-03 15:11:26', 'Dwayne Johnson', 'Deleted Item: Light Bulb, 10', 1, 0),
-(1370, '2024-03-03 15:11:34', 'Dwayne Johnson', 'Logged out', 1, 1123456786);
+(1370, '2024-03-03 15:11:34', 'Dwayne Johnson', 'Logged out', 1, 1123456786),
+(1371, '2024-03-03 15:30:34', 'Elon Musk', 'Logged in', 1, 1315648790),
+(1372, '2024-03-03 15:51:03', 'Elon Musk', 'Added a Category: ,  with Amount: 10000.', 1, 0),
+(1373, '2024-03-03 15:51:30', 'Elon Musk', 'Added a Category: ,  with Amount: 11000.', 1, 0),
+(1374, '2024-03-03 16:53:08', 'Elon Musk', 'Logged out', 1, 1315648790),
+(1375, '2024-03-03 16:53:52', 'Dwayne Johnson', 'Logged in', 1, 1123456786),
+(1376, '2024-03-03 16:54:51', 'Dwayne Johnson', 'Logged out', 1, 1123456786),
+(1377, '2024-03-04 05:02:14', 'Jeff Bezos', 'Logged in', 1, 1603909324);
 
 -- --------------------------------------------------------
 
@@ -754,8 +761,17 @@ CREATE TABLE `budget` (
   `condominium_id` int(11) NOT NULL,
   `id` int(11) NOT NULL,
   `category` varchar(255) NOT NULL,
-  `amount` float NOT NULL
+  `amount` float NOT NULL,
+  `is_deleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+--
+-- Dumping data for table `budget`
+--
+
+INSERT INTO `budget` (`condominium_id`, `id`, `category`, `amount`, `is_deleted`) VALUES
+(1, 1, 'Maintenance', 10000, 0),
+(1, 2, 'Security', 11000, 0);
 
 -- --------------------------------------------------------
 
@@ -1164,7 +1180,7 @@ ALTER TABLE `visitors`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1371;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1378;
 
 --
 -- AUTO_INCREMENT for table `admin_transactions`
@@ -1176,7 +1192,7 @@ ALTER TABLE `admin_transactions`
 -- AUTO_INCREMENT for table `budget`
 --
 ALTER TABLE `budget`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `condominiums`

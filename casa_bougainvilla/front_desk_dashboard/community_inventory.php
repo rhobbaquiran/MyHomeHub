@@ -270,6 +270,16 @@ $stmt->close();
             }
         }
 
+        .action-buttons {
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .action-buttons button {
+            margin-right: 5px;
+        }
+
         /* Add alternating background colors to table rows */
         tbody tr:nth-child(even) {
             background-color: #f2f2f2;
@@ -279,6 +289,25 @@ $stmt->close();
         tbody tr:nth-child(odd) {
             background-color: #ffffff;
             /* White background for odd rows */
+        }
+
+        /* Additional style for action buttons */
+        .action-buttons {
+            text-align: center;
+            /* Center the buttons within the padded area */
+            display: flex;
+            justify-content: space-between;
+            /* Add space between buttons */
+        }
+
+        .action-buttons button {
+            margin-right: 5px;
+        }
+
+        th.action-column,
+        td.action-column {
+            width: 250px;
+            /* Adjust the width as needed */
         }
 
         .nav-links a span {
@@ -323,7 +352,7 @@ $stmt->close();
                 echo '<tr>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Quantity</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Item</center></th>';
-                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
+                echo '<th class="action-column" scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
                 echo '</tr>';
                 echo '</thead>';
                 echo '<tbody>';
@@ -334,11 +363,17 @@ $stmt->close();
                     $quantity = $row['quantity'];
 
                     echo '<tr>
-                        <td style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
+                        <td scope="row" style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
-                        <td class="action-column" style="text-align: center;">
-                        <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
+                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
+
+                    // Update button
+                    echo '<button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>';
+
+                    // Delete button
+                    echo '<button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>';
+
+                    echo '</td>
                         </tr>';
                 }
 
@@ -359,7 +394,7 @@ $stmt->close();
                         <th scope="col" style="white-space: nowrap; text-align: center;">
                             <center>Item</center>
                         </th>
-                        <th scope="col" style="white-space: nowrap; text-align: center;">
+                        <th scope="col" class="action-column" style="white-space: nowrap; text-align: center;">
                             <center>Action</center>
                         </th>
                     </tr>
@@ -377,12 +412,17 @@ $stmt->close();
                         $quantity = $row['quantity'];
 
                         echo '<tr>
-                        <td style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
+                        <td scope="row" style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
-                        <td class="action-column" style="text-align: center;">
-                        <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
-                        </td>
+                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
+
+                        // Update button
+                        echo '<button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>';
+
+                        // Delete button
+                        echo '<button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>';
+
+                        echo '</td>
                         </tr>';
                     }
                     ?>

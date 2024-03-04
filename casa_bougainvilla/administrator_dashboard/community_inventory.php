@@ -19,8 +19,9 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
 }
 
 // Function to log activity
-function logActivity($user, $action) {
-    
+function logActivity($user, $action)
+{
+
     global $mysqli;
     $insert_query = "INSERT INTO activity_logs (timestamp, user, action, condominium_id) VALUES (CURRENT_TIMESTAMP, ?, ?, 1)";
     $stmt = $mysqli->prepare($insert_query);
@@ -348,7 +349,7 @@ $stmt->close();
                 echo '<tr>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Quantity</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Item</center></th>';
-                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
+                echo '<th class="action-column" scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>';
                 echo '</tr>';
                 echo '</thead>';
                 echo '<tbody>';
@@ -359,11 +360,17 @@ $stmt->close();
                     $quantity = $row['quantity'];
 
                     echo '<tr>
-                        <td style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
+                        <td scope="row" style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
-                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">
-                        <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
+                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
+
+                    // Update button
+                    echo '<button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>';
+
+                    // Delete button
+                    echo '<button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>';
+
+                    echo '</td>
                         </tr>';
                 }
 
@@ -384,7 +391,7 @@ $stmt->close();
                         <th scope="col" style="white-space: nowrap; text-align: center;">
                             <center>Item</center>
                         </th>
-                        <th scope="col" style="white-space: nowrap; text-align: center;">
+                        <th scope="col" class="action-column" style="white-space: nowrap; text-align: center;">
                             <center>Action</center>
                         </th>
                     </tr>
@@ -402,12 +409,17 @@ $stmt->close();
                         $quantity = $row['quantity'];
 
                         echo '<tr>
-                        <td style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
+                        <td scope="row" style="white-space: nowrap; text-align: center;"><center>' . $quantity . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $item_name . '</center></td>
-                        <td class="action-column" style="text-align: center;">
-                        <button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                        <button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>
-                        </td>
+                        <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
+
+                        // Update button
+                        echo '<button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>';
+
+                        // Delete button
+                        echo '<button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>';
+
+                        echo '</td>
                         </tr>';
                     }
                     ?>
