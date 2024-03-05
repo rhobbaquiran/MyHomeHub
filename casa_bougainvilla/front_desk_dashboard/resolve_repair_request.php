@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 include('../../includes/database.php');
 
@@ -21,26 +21,6 @@ function logActivity($user, $action)
 
 if (!isset($_GET['resolveid']) || empty($_GET['resolveid'])) {
     header("Location: resolve_repair_request.php");
-    exit();
-}
-
-// To get person of contact
-$query = "SELECT condominiums.id, condominiums.person_of_contact FROM condominiums
-            LEFT JOIN users
-            ON condominiums.person_of_contact = users.username
-            WHERE condominiums.id = ?";
-
-$stmt = $mysqli->prepare($query);
-$stmt->bind_param("i", $_SESSION['condominium_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $person_of_contact_username = $row['person_of_contact'];
-} else {
-    $_SESSION['error'] = 'No data found for the given condominium ID';
-    header("Location: repair_request.php");
     exit();
 }
 
@@ -86,9 +66,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         logActivity($_SESSION['username'], "Resolved a request: $heading");
 
         // Retrieve person of contact's email
-        $email_query = "SELECT email FROM users WHERE username = (SELECT person_of_contact FROM condominiums WHERE id = ?)";
+        $email_query = "SELECT email FROM users WHERE username = ?";
         $stmt_email = $mysqli->prepare($email_query);
-        $stmt_email->bind_param("i", $condominium_id);
+        $stmt_email->bind_param("i", $resident_username);
         $stmt_email->execute();
         $result_email = $stmt_email->get_result();
 
@@ -100,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $username = $_SESSION['username'];
             $resolve_confirmation = trim($_POST['resolve_confirmation']);
             $subject = 'Repair Request Resolved Notification';
-            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been resolved with the following confirmation:\n\n$resolve_confirmation\n\n\nFrom,\n$person_of_contact_username\nCasa Bougainvilla";
+            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been resolved with the following confirmation:\n\n$resolve_confirmation\n\n\nFrom,\n$username\nCasa Bougainvilla";
             $headers = 'From:  adm1nplk2022@yahoo.com';
 
             // Send email notification
@@ -215,9 +195,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/resident_sidebar.php" ?>
+    <?php include "../../includes/sidebars/front_desk_sidebar.php" ?>
     <!-- import prompt styles -->
-    <?php include "../../includes/sidebars/resident_sidebar_prompt.php" ?>
+    <?php include "../../includes/sidebars/front_desk_sidebar_prompt.php" ?>
 
     <div class="container">
         <div class="row">

@@ -19,12 +19,7 @@ function logActivity($user, $action)
     $stmt->close();
 }
 
-if (!isset($_GET['resolveid']) || empty($_GET['resolveid'])) {
-    header("Location: resolve_repair_request.php");
-    exit();
-}
-
-// To get person of contact
+// Fetch data
 $query = "SELECT condominiums.id, condominiums.person_of_contact FROM condominiums
             LEFT JOIN users
             ON condominiums.person_of_contact = users.username
@@ -44,23 +39,12 @@ if ($result->num_rows > 0) {
     exit();
 }
 
-// Retrieve title from the database based on the resolve id
-$resolve_id = $_GET['resolveid'];
-$sql = "SELECT heading, service_ticket.username, service_ticket.condominium_id, users.username AS resident_username 
-        FROM service_ticket 
-        LEFT JOIN users ON service_ticket.username = users.username
-        WHERE ticket_number = ?";
-$stmt_title = $mysqli->prepare($sql);
-$stmt_title->bind_param("i", $resolve_id);
-$stmt_title->execute();
-$stmt_title->bind_result($heading, $resident_username, $condominium_id, $resident_username);
-$stmt_title->fetch();
-$stmt_title->close();
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $resolve_confirmation = trim($_POST['resolve_confirmation']);
 
-    // Get the condominium_id based on the selected condominium name
+    $heading = trim($_POST['heading']);
+    $description = trim($_POST['description']);
+
+    // To get the condominium_id based on the selected condominium name
     $condo_query = "SELECT id FROM condominiums WHERE name = ?";
     $stmt_condo = $mysqli->prepare($condo_query);
     $stmt_condo->bind_param("s", $condominium);
@@ -69,51 +53,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_condo->fetch();
     $stmt_condo->close();
 
-    // To update the repair status
-    $update_query = "UPDATE service_ticket SET status=1, date_finished=CURRENT_TIMESTAMP,  resolve_confirmation=? WHERE ticket_number=?";
-    $stmt = $mysqli->prepare($update_query);
+    // To fetch unit_number based on username
+    $unit_query = "SELECT unit_number FROM units WHERE tenant_id = ?";
+    $stmt_unit = $mysqli->prepare($unit_query);
+    $stmt_unit->bind_param("s", $_SESSION['username']);
+    $stmt_unit->execute();
+    $stmt_unit->bind_result($target_unit);
+    $stmt_unit->fetch();
+    $stmt_unit->close();
 
-    // Bind parameters
-    $stmt->bind_param("si", $resolve_confirmation, $resolve_id);
+    // Insert into service_ticket table
+    $insert_query = "INSERT INTO service_ticket (condominium_id, target_unit, username, date_issued, heading, description, status)
+    VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, 0)";
+    $stmt = $mysqli->prepare($insert_query);
 
-    // Execute the query
+    // To bind parameters
+    $stmt->bind_param("iisss", $_SESSION['condominium_id'], $target_unit, $_SESSION['username'], $heading, $description);
     $stmt->execute();
 
     // Check for success
-    if ($stmt->affected_rows > 0) {
-        $_SESSION['success'] = 'Request resolved successfully.';
+    if ($stmt->errno === 0) {
+        $_SESSION['success'] = 'Request submitted successfully.';
         // Log the activity
-        logActivity($_SESSION['username'], "Resolved a request: $heading");
+        logActivity($_SESSION['username'], "Submitted a repair request: $heading");
 
-        // Retrieve person of contact's email
-        $email_query = "SELECT email FROM users WHERE username = (SELECT person_of_contact FROM condominiums WHERE id = ?)";
+        // To retrieve email of person of contact
+        $email_query = "SELECT email FROM users WHERE username = ?";
         $stmt_email = $mysqli->prepare($email_query);
-        $stmt_email->bind_param("i", $condominium_id);
+        $stmt_email->bind_param("s", $person_of_contact_username);
         $stmt_email->execute();
         $result_email = $stmt_email->get_result();
+
 
         if ($result_email->num_rows == 1) {
             $email_row = $result_email->fetch_assoc();
             $to = $email_row['email']; // Use the retrieved email for the 'to' field
-
-            // Compose email notification message
             $username = $_SESSION['username'];
-            $resolve_confirmation = trim($_POST['resolve_confirmation']);
-            $subject = 'Repair Request Resolved Notification';
-            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been resolved with the following confirmation:\n\n$resolve_confirmation\n\n\nFrom,\n$person_of_contact_username\nCasa Bougainvilla";
-            $headers = 'From:  adm1nplk2022@yahoo.com';
+            $subject = 'Repair Request Notification';
+            $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a repair request with the following details:\n\nTitle:\n\n $heading\n\nDescription:\n\n $description\n\n\nFrom,\n$username\nTenant of Casa Bougainvilla";
+            $headers = 'From: adm1nplk2022@yahoo.com'; // Change this to your email address or the email address you want to send from
 
-            // Send email notification
+            // Use mail() function to send the email
             if (mail($to, $subject, $message, $headers)) {
-                $_SESSION['success'] = 'Request resolved successfully. Email notification sent.';
+                $_SESSION['success'] .= ' Email notification sent successfully.';
             } else {
-                $_SESSION['error'] = 'Error sending email notification.';
+                $_SESSION['error'] = 'Failed to send repair request notification email.';
             }
         } else {
-            $_SESSION['error'] = 'Error retrieving email for person of contact.';
+            // Handle the case where the email couldn't be retrieved
+            $_SESSION['error'] = 'Error retrieving email for person of contact: ' . $stmt_email->error;
         }
     } else {
-        $_SESSION['error'] = 'Error resolving a request: ' . $stmt->error;
+        $_SESSION['error'] = 'Error submitting a request: ' . $stmt->error;
     }
 
     $stmt->close();
@@ -127,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
 
 <head>
-    <title>Resolve Request</title>
+    <title>Add Request</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
@@ -215,23 +206,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/resident_sidebar.php" ?>
+    <?php include "../../includes/sidebars/tenant_sidebar.php" ?>
     <!-- import prompt styles -->
-    <?php include "../../includes/sidebars/resident_sidebar_prompt.php" ?>
+    <?php include "../../includes/sidebars/tenant_sidebar_prompt.php" ?>
 
     <div class="container">
         <div class="row">
             <div class="col-md-4 offset-md-4 form">
-                <form action="resolve_repair_request.php?resolveid=<?php echo $_GET['resolveid']; ?>" method="post" enctype="multipart/form-data">
+                <form action="add_repair_request.php" method="post" enctype="multipart/form-data">
 
-                    <h2 class="text-center">Resolve Repair Request</h2><br>
-
-                    <!-- Display the title retrieved from URL parameters -->
-                    <h2 class="text-center">Title: <?php echo  $heading; ?></h2><br>
+                    <h2 class="text-center">Add Request</h2><br>
 
                     <div class="form-group">
-                        <label for="resolve_confirmation">Resolve Confirmation:</label>
-                        <textarea class="form-control" placeholder="Enter Resolve Confirmation" name="resolve_confirmation" autocomplete="off" required></textarea>
+                        <label for="heading">Title:</label>
+                        <input type="text" class="form-control" placeholder="Enter Title" name="heading" autocomplete="off" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea class="form-control" placeholder="Enter Description" name="description" autocomplete="off" required></textarea>
                     </div><br>
 
                     <?php

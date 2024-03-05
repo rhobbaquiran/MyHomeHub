@@ -1,13 +1,6 @@
-<?php
+<?php 
 session_start();
-
-// Include the database connection file
 include('../../includes/database.php');
-
-// Pagination parameters
-$rowsPerPage = 10;
-$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-$offset = ($page - 1) * $rowsPerPage;
 
 if (!isset($_SESSION['username']) || empty($_SESSION['username']) || !isset($_SESSION['role'])) {
     header("Location: ../../index.php");
@@ -15,7 +8,7 @@ if (!isset($_SESSION['username']) || empty($_SESSION['username']) || !isset($_SE
 }
 
 // Check user role and redirect if not authorized
-$allowed_roles = ['Administrator'];
+$allowed_roles = ['Tenant'];
 
 if (!in_array($_SESSION['role'], $allowed_roles)) {
     // User is not authorized for this dashboard
@@ -23,16 +16,17 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-$sql = "SELECT * FROM service_ticket WHERE condominium_id = ? AND status = 0 ORDER BY date_issued DESC";
+// Fetch active request for the current user
+$sql = "SELECT * FROM service_ticket WHERE condominium_id = ? AND username = ? AND status = 0 ORDER BY date_issued DESC";
 $stmt = $mysqli->prepare($sql);
-$stmt->bind_param("s", $_SESSION['condominium_id']); // Assuming condominium_id is stored in $_SESSION['condominium_id']
+$stmt->bind_param("ss", $_SESSION['condominium_id'], $_SESSION['username']); // Assuming condominium_id is stored in $_SESSION['condominium_id']
 $stmt->execute();
 $query_result = $stmt->get_result();
 
-// Fetch history requests
-$sql_history = "SELECT * FROM service_ticket WHERE condominium_id = ? AND (status = 1 OR status = 2) ORDER BY date_issued DESC";
+// Fetch history requests for the current user
+$sql_history = "SELECT * FROM service_ticket WHERE condominium_id = ? AND username = ? AND (status = 1 OR status = 2) ORDER BY date_issued DESC";
 $stmt_history = $mysqli->prepare($sql_history);
-$stmt_history->bind_param("s", $_SESSION['condominium_id']); // Corrected binding
+$stmt_history->bind_param("ss", $_SESSION['condominium_id'], $_SESSION['username']); // Corrected binding
 $stmt_history->execute();
 $query_result_history = $stmt_history->get_result();
 
@@ -52,7 +46,6 @@ function getStatusLabel($status)
 }
 
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -207,66 +200,40 @@ function getStatusLabel($status)
         .nav-links a span {
             font-weight: bold;
         }
-
-        .btn-white {
-            background-color: #ffffff;
-            color: #ffffff;
-            border: 1px solid #ffffff;
-
-        }
     </style>
 </head>
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
+    <?php include "../../includes/sidebars/tenant_sidebar.php" ?>
 
     <div class="container">
-        <button class="btn btn-white">White Button</button>
+
+        <button class="btn btn-primary mx-5 my-5"><a href="add_repair_request.php" class="text-light">Add Request</a></button>
 
         <h2 style="font-weight: bold; text-align: center;">Repair Request</h2>
         <div class="card mt-3">
             <div class="card-body">
                 <h5 class="card-title">Active Requests</h5>
                 <ul class="list-group">
-                    <?php
-                    // Iterate through the query result and assign values to variables
-                    while ($row = $query_result->fetch_assoc()) {
-                        $ticket_number = $row['ticket_number'];
-                        $target_unit = $row['target_unit'];
-                        $username = $row['username'];
-                        $date_issued = $row['date_issued'];
-                        $heading = $row['heading'];
-                        $description = $row['description'];
-                        $status = $row['status'];
-                        $date_finished = $row['date_finished'];
-                        $rejection_reason = $row['rejection_reason'];
-                    ?>
+                    <?php while ($row = $query_result->fetch_assoc()) : ?>
                         <li class="list-group-item">
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    <!-- Use variables within the HTML -->
-                                    <div>Unit Number: <?php echo $target_unit; ?></div>
-                                    <div>Requested by: <?php echo $username; ?></div>
-                                    <div>Date Issued: <?php echo $date_issued; ?></div>
-                                    <div>Title: <?php echo $heading; ?></div>
-                                    <div>Description: <?php echo $description; ?></div>
-                                    <div>Status: <span style="font-weight: bold;"><?php echo getStatusLabel($status); ?></span></div>
-                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $date_finished === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
-                                    <?php if ($status == 2) : ?>
-                                        <div>Rejection Reason: <?php echo $rejection_reason; ?></div>
-                                    <?php endif; ?>
-                                </div>
-                                <div>
-                                    <!-- Resolve and Reject Buttons -->
-                                    <?php if ($row['status'] == 0) : ?>
-                                        <button class="btn btn-success"><a href="resolve_repair_request.php?resolveid=<?php echo $ticket_number; ?>" class="text-light">Resolve</a></button>
-                                        <button class="btn btn-danger"><a href="reject_repair_request.php?rejectid=<?php echo $ticket_number; ?>" class="text-light">Reject</a></button>
+                                    <div>Unit Number: <?php echo $row['target_unit']; ?></div>
+                                    <div>Requested by: <?php echo $_SESSION['username']; ?></div>
+                                    <div>Date Issued: <?php echo $row['date_issued']; ?></div>
+                                    <div>Title: <?php echo $row['heading']; ?></div>
+                                    <div>Description: <?php echo $row['description']; ?></div>
+                                    <div>Status: <span style="font-weight: bold;"><?php echo getStatusLabel($row['status']); ?></span></div>
+                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $row['date_finished'] === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
+                                    <?php if ($row['status'] == 2) : ?>
+                                        <div>Rejection Reason: <?php echo $row['rejection_reason']; ?></div>
                                     <?php endif; ?>
                                 </div>
                             </div>
                         </li>
-                    <?php } ?>
+                    <?php endwhile; ?>
                 </ul>
             </div>
         </div>
@@ -276,50 +243,59 @@ function getStatusLabel($status)
                 <h5 class="card-title">History Requests</h5>
                 <ul class="list-group">
                     <?php
-                    // Iterate through the query result for history requests
-                    while ($row_history = $query_result_history->fetch_assoc()) {
+                    // Check if there are any history requests
+                    if ($query_result_history !== null) {
+                        // Iterate through the query result for history requests
+                        while ($row_history = $query_result_history->fetch_assoc()) {
                     ?>
-                        <li class="list-group-item">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <!-- Use variables within the HTML -->
-                                    <div>Unit Number: <?php echo $row_history['target_unit']; ?></div>
-                                    <div>Requested by: <?php echo $row_history['username']; ?></div>
-                                    <div>Date Issued: <?php echo $row_history['date_issued']; ?></div>
-                                    <div>Title: <?php echo $row_history['heading']; ?></div>
-                                    <div>Description: <?php echo $row_history['description']; ?></div>
-                                    <div>Status:
-                                        <?php
-                                        $status = $row_history['status'];
-                                        $statusColor = '';
-                                        switch ($status) {
-                                            case 0:
-                                                $statusColor = 'blue'; // Pending
-                                                break;
-                                            case 1:
-                                                $statusColor = 'green'; // Resolved
-                                                break;
-                                            case 2:
-                                                $statusColor = 'red'; // Rejected
-                                                break;
-                                            default:
-                                                $statusColor = 'black'; // Unknown status
-                                                break;
-                                        }
-                                        ?>
-                                        <span style="font-weight: bold; color: <?php echo $statusColor; ?>"><?php echo getStatusLabel($status); ?></span>
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <!-- Use variables within the HTML -->
+                                        <div>Unit Number: <?php echo $row_history['target_unit']; ?></div>
+                                        <div>Requested by: <?php echo $row_history['username']; ?></div>
+                                        <div>Date Issued: <?php echo $row_history['date_issued']; ?></div>
+                                        <div>Title: <?php echo $row_history['heading']; ?></div>
+                                        <div>Description: <?php echo $row_history['description']; ?></div>
+                                        <div>Status:
+                                            <?php
+                                            $status = $row_history['status'];
+                                            $statusColor = '';
+                                            switch ($status) {
+                                                case 0:
+                                                    $statusColor = 'blue'; // Pending
+                                                    break;
+                                                case 1:
+                                                    $statusColor = 'green'; // Resolved
+                                                    break;
+                                                case 2:
+                                                    $statusColor = 'red'; // Rejected
+                                                    break;
+                                                default:
+                                                    $statusColor = 'black'; // Unknown status
+                                                    break;
+                                            }
+                                            ?>
+                                            <span style="font-weight: bold; color: <?php echo $statusColor; ?>"><?php echo getStatusLabel($status); ?></span>
+                                        </div>
+                                        <div>Date Finished: <span style="font-weight: bold;"><?php echo $row_history['date_finished'] === '0000-00-00' ? "Pending" : $row_history['date_finished']; ?></span></div>
+                                        <?php if ($row_history['status'] == 2) : ?>
+                                            <div>Rejection Reason: <?php echo $row_history['rejection_reason']; ?></div>
+                                        <?php endif; ?>
                                     </div>
-                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $row_history['date_finished'] === '0000-00-00' ? "Pending" : $row_history['date_finished']; ?></span></div>
-                                    <?php if ($row_history['status'] == 2) : ?>
-                                        <div>Rejection Reason: <?php echo $row_history['rejection_reason']; ?></div>
-                                    <?php endif; ?>
                                 </div>
-                            </div>
-                        </li>
-                    <?php } ?>
+                            </li>
+                    <?php
+                        }
+                    } else {
+                        // Display a message if there are no history requests
+                        echo "<p>No history requests found.</p>";
+                    }
+                    ?>
                 </ul>
             </div>
         </div>
+
 
         <script>
             function toggleDetails(ticketNumber) {

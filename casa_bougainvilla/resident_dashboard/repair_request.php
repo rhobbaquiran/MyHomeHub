@@ -23,12 +23,19 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
-// Fetch repair requests from the database
-$sql = "SELECT * FROM service_ticket WHERE username = ? ORDER BY date_issued DESC";
+// Fetch active request for the current user
+$sql = "SELECT * FROM service_ticket WHERE condominium_id = ? AND status = 0 ORDER BY date_issued DESC";
 $stmt = $mysqli->prepare($sql);
-$stmt->bind_param("s", $_SESSION['username']);
+$stmt->bind_param("s", $_SESSION['condominium_id']); // Assuming condominium_id is stored in $_SESSION['condominium_id']
 $stmt->execute();
 $query_result = $stmt->get_result();
+
+// Fetch history requests for the current user
+$sql_history = "SELECT * FROM service_ticket WHERE condominium_id = ? AND username = ? AND (status = 1 OR status = 2) ORDER BY date_issued DESC";
+$stmt_history = $mysqli->prepare($sql_history);
+$stmt_history->bind_param("ss", $_SESSION['condominium_id'], $_SESSION['username']); // Corrected binding
+$stmt_history->execute();
+$query_result_history = $stmt_history->get_result();
 
 // Function to get the status label
 function getStatusLabel($status)
@@ -212,6 +219,7 @@ function getStatusLabel($status)
 
         <button class="btn btn-primary mx-5 my-5"><a href="add_repair_request.php" class="text-light">Add Request</a></button>
 
+        <h2 style="font-weight: bold; text-align: center;">Repair Request</h2>
         <div class="card mt-3">
             <div class="card-body">
                 <h5 class="card-title">Active Requests</h5>
@@ -242,49 +250,78 @@ function getStatusLabel($status)
             <div class="card-body">
                 <h5 class="card-title">History Requests</h5>
                 <ul class="list-group">
-                    <?php foreach ($repairRequests as $request) : ?>
-                        <?php if ($request['status'] == 'Resolved' || $request['status'] == 'Rejected') : ?>
+                    <?php
+                    // Check if there are any history requests
+                    if ($query_result_history !== null) {
+                        // Iterate through the query result for history requests
+                        while ($row_history = $query_result_history->fetch_assoc()) {
+                    ?>
                             <li class="list-group-item">
                                 <div class="d-flex justify-content-between">
                                     <div>
-                                        <div>Unit Number: <?php echo $request['target_unit']; ?></div>
-                                        <div>Requested by: <?php echo $request['username']; ?></div>
-                                        <div>Date Issued: <?php echo $row['date_issued']; ?></div>
-                                        <div>Title: <?php echo $row['heading']; ?></div>
-                                        <div>Description: <?php echo $request['description']; ?></div>
-                                        <div>Date Finished: <?php echo $request['date_finished'] === '0000-00-00' ? "<strong>Pending</strong>" : $request['date_finished']; ?></div>
-                                        <div>Status: <?php echo $request['status']; ?></div>
-                                        <?php if ($request['status'] == 'Rejected') : ?>
-                                            <div>Rejection Reason: <?php echo $request['rejection_reason']; ?></div>
+                                        <!-- Use variables within the HTML -->
+                                        <div>Unit Number: <?php echo $row_history['target_unit']; ?></div>
+                                        <div>Requested by: <?php echo $row_history['username']; ?></div>
+                                        <div>Date Issued: <?php echo $row_history['date_issued']; ?></div>
+                                        <div>Title: <?php echo $row_history['heading']; ?></div>
+                                        <div>Description: <?php echo $row_history['description']; ?></div>
+                                        <div>Status:
+                                            <?php
+                                            $status = $row_history['status'];
+                                            $statusColor = '';
+                                            switch ($status) {
+                                                case 0:
+                                                    $statusColor = 'blue'; // Pending
+                                                    break;
+                                                case 1:
+                                                    $statusColor = 'green'; // Resolved
+                                                    break;
+                                                case 2:
+                                                    $statusColor = 'red'; // Rejected
+                                                    break;
+                                                default:
+                                                    $statusColor = 'black'; // Unknown status
+                                                    break;
+                                            }
+                                            ?>
+                                            <span style="font-weight: bold; color: <?php echo $statusColor; ?>"><?php echo getStatusLabel($status); ?></span>
+                                        </div>
+                                        <div>Date Finished: <span style="font-weight: bold;"><?php echo $row_history['date_finished'] === '0000-00-00' ? "Pending" : $row_history['date_finished']; ?></span></div>
+                                        <?php if ($row_history['status'] == 2) : ?>
+                                            <div>Rejection Reason: <?php echo $row_history['rejection_reason']; ?></div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
                             </li>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
+                    <?php
+                        }
+                    } else {
+                        // Display a message if there are no history requests
+                        echo "<p>No history requests found.</p>";
+                    }
+                    ?>
                 </ul>
             </div>
         </div>
-    </div>
 
 
-    <script>
-        function toggleDetails(ticketNumber) {
-            var details = document.getElementById('details_' + ticketNumber);
-            details.classList.toggle('active');
-            if (details.style.display === "block") {
-                details.style.display = "none";
-            } else {
-                details.style.display = "block";
+        <script>
+            function toggleDetails(ticketNumber) {
+                var details = document.getElementById('details_' + ticketNumber);
+                details.classList.toggle('active');
+                if (details.style.display === "block") {
+                    details.style.display = "none";
+                } else {
+                    details.style.display = "block";
+                }
             }
-        }
 
-        $(document).ready(function() {
-            $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
-                theme: 'bootstrap'
+            $(document).ready(function() {
+                $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
+                    theme: 'bootstrap'
+                });
             });
-        });
-    </script>
+        </script>
 </body>
 
 </html>
