@@ -300,7 +300,7 @@ $stmt->close();
     <!-- Sidebar Import -->
     <?php include "../../includes/sidebars/resident_sidebar.php" ?>
 
-    <div class="container">
+    <div class="container"><br><br><br><br><br><br>
         <!--<button class="btn btn-primary mx-5 my-5"><a href="donate_community_budget.php" class="text-light">Donate Budget</a></button>-->
 
         <!-- Search Bar (updated) -->
