@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $username = $_SESSION['username'];
             $resolve_confirmation = trim($_POST['resolve_confirmation']);
             $subject = 'Repair Request Resolved Notification';
-            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been resolved with the following confirmation:\n\n$resolve_confirmation\n\n\nFrom,\n$person_of_contact_username\nCasa Bougainvilla";
+            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been resolved with the following confirmation:\n\n$resolve_confirmation\n\n\nFrom,\n$person_of_contact_username\nAdministrator of Casa Bougainvilla";
             $headers = 'From:  adm1nplk2022@yahoo.com';
 
             // Send email notification
