@@ -140,7 +140,7 @@ if (isset($_POST['add_submit'])) {
 
         // Send email notification
         $subject = 'Donation Payment Notification';
-        $message = "Dear Mr./Ms. $username,\n\nThank you for your contribution to our community. This is to inform you that a donation payment has been made to the community under category: $category. Amount: " . number_format($amount, 2) . "\n\n\nFrom,\n$person_of_contact_username\n Casa Bougainvilla";
+        $message = "Dear Mr./Ms. $username,\n\nThank you for your contribution to our community. This is to inform you that a donation payment has been made to the community under category: $category. Amount: " . number_format($amount, 2) . "\n\n\nFrom,\n$person_of_contact_username\n Administrator of Casa Bougainvilla";
         $headers = 'From: adm1nplk2022@yahoo.com';
 
         // Use mail() function to send the email
