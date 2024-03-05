@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $username = $_SESSION['username'];
             $rejection_reason = trim($_POST['rejection_reason']);
             $subject = 'Repair Request Rejection Notification';
-            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been rejected with the following reason:\n\n$rejection_reason\n\n\nFrom,\n$username\nCasa Bougainvilla";
+            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been rejected with the following reason:\n\n$rejection_reason\n\n\nFrom,\n$username\nFront Desk of Casa Bougainvilla";
             $headers = 'From:  adm1nplk2022@yahoo.com';
 
             // Send email notification
