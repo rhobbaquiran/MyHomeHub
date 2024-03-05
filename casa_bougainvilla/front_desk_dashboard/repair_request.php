@@ -219,7 +219,7 @@ function getStatusLabel($status)
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
+    <?php include "../../includes/sidebars/front_desk_sidebar.php" ?>
 
     <div class="container">
         <button class="btn btn-white">White Button</button>
