@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Retrieve person of contact's email
         $email_query = "SELECT email FROM users WHERE username = ?";
         $stmt_email = $mysqli->prepare($email_query);
-        $stmt_email->bind_param("i", $resident_username);
+        $stmt_email->bind_param("s", $resident_username);
         $stmt_email->execute();
         $result_email = $stmt_email->get_result();
 
