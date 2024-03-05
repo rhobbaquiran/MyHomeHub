@@ -59,10 +59,9 @@ $total_rows = $total_rows_result->fetch_assoc()['total'];
 $total_pages = ceil($total_rows / $limit);
 
 // Modify the main SQL query
-$sql = "SELECT * FROM visitors WHERE is_deleted = 0 AND condominium_id = 1 LIMIT ?, ?";
-$stmt = $mysqli->prepare($sql);
-$stmt->bind_param("ii", $offset, $limit);
-$stmt->execute();
+$sql = "SELECT * FROM visitors WHERE is_deleted = 0 AND condominium_id = 1 LIMIT $offset, $limit";
+$sql .= " LIMIT $offset, $limit";
+$query = $mysqli->query($sql);
 
 // Process search form submission
 if (isset($_POST['searchButton'])) {
@@ -163,6 +162,103 @@ if (isset($_GET['deleteid'])) {
             padding: 0;
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100%;
+            width: 18%;
+            /* Increase the width as needed */
+            background: #084cb4;
+            padding-top: 20px;
+            /* Add a gap at the top of the logo */
+            transition: width 0.4s;
+        }
+
+        .sidebar.active {
+            width: 60px;
+            overflow: hidden;
+            /* Hide text when collapsed */
+        }
+
+        .sidebar .logo-details {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            /* Adjust padding as needed */
+        }
+
+        .sidebar .logo-details i {
+            font-size: 28px;
+            font-weight: 500;
+            color: #fff;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .sidebar .logo-details .logo_name {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .sidebar .nav-links {
+            margin-top: 10px;
+        }
+
+        .sidebar .nav-links li {
+            position: relative;
+            list-style: none;
+            height: 50px;
+        }
+
+        .sidebar .nav-links li a {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.4s ease;
+            color: #fff;
+            /* Set the active text color to white */
+        }
+
+        .sidebar .nav-links li a.active {
+            background: #081D45;
+            color: #fff;
+            /* Set the active text color to white */
+        }
+
+        .sidebar .nav-links li a:hover {
+            background: #081D45;
+            color: #fff;
+            /* Set the hover text color to white */
+        }
+
+        .sidebar .nav-links li i {
+            min-width: 60px;
+            text-align: center;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .sidebar .nav-links li a .links_name {
+            color: #fff;
+            font-size: 15px;
+            font-weight: 400;
+            white-space: nowrap;
+        }
+
+        .sidebar .nav-links .log_out {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        nav .sidebar-button i {
+            font-size: 35px;
+            margin-right: 10px;
         }
 
         @media (max-width: 00px) {
@@ -363,62 +459,43 @@ if (isset($_GET['deleteid'])) {
                     <tbody>
                         <?php
                         // Retrieve data from users and join with condominiums table. Path: use condominium_id in the "users" table inable to go in "condominiums" table to get the "name" of the condominium. 
-                        $stmt->bind_param("ii", $offset, $limit);
-                        $stmt->execute();
-                        $query = $stmt->get_result();
+                        $sql = "SELECT * FROM visitors WHERE is_deleted = 0 AND condominium_id = 1 LIMIT $offset, $limit";
+                        $query = $mysqli->query($sql);
 
                         while ($row = $query->fetch_assoc()) {
-                        // Extracting data from the row
-                        $id = $row['id'];
-                        $name = $row['name'];
-                        $phone_number = $row['phone_number'];
-                        $email = $row['email'];
-                        $arrival_time = $row['arrival_time'];
-                        $departure_time = $row['departure_time'];
-                        $purpose = $row['purpose'];
+                            // Extracting data from the row
+                            $id = $row['id'];
+                            $name = $row['name'];
+                            $phone_number = $row['phone_number'];
+                            $email = $row['email'];
+                            $arrival_time = $row['arrival_time'];
+                            $departure_time = $row['departure_time'];
+                            $purpose = $row['purpose'];
 
-                        // Displaying the data in the table
-                        echo '<tr>
-                            <th scope="row"><center>' . $id . '</center></th>
-                            <td style="white-space: nowrap; text-align: center;"><center>' . $name . '</center></td>
-                            <td style="white-space: nowrap; text-align: center;"><center>' . $phone_number . '</center></td>
-                            <td style="white-space: nowrap; text-align: center;"><center>' . $email . '</center></td>
-                            <td style="white-space: nowrap; text-align: center;"><center>' . $arrival_time . '</center></td>
-                            <td style="white-space: nowrap; text-align: center;"><center>' . $departure_time . '</center></td>
-                            <td style="white-space: nowrap; text-align: center;"><center>' . $purpose . '</center></td>
-                            <td class="action-column action-buttons" style="white-space: nowrap;">
-                                <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                                <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
-                            </td>
-                            </tr>';
+                            // Displaying the data in the table
+                            echo '<tr>
+                        <th scope="row"><center>' . $id . '</center></th>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $name . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $phone_number . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $email . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $arrival_time . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $departure_time . '</center></td>
+                        <td style="white-space: nowrap; text-align: center;"><center>' . $purpose . '</center></td>
+                        <td class="action-column action-buttons" style="white-space: nowrap;">
+                            <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                            <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
+                        </td>
+                        </tr>';
                         }
-
-                        $query->close();
                         ?>
-                </tbody>
+                    </tbody>
                 </table>
             </div>
 
             <ul class="pagination justify-content-center">
                 <?php
-                // Calculate the range of pages to display
-                $range = 5; // Number of buttons to display on either side of the current page
-                $start = max(1, $page - $range);
-                $end = min($total_pages, $page + $range);
-
-                // Display previous page link
-                if ($page > 1) {
-                    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page - 1) . '">&laquo;</a></li>';
-                }
-
-                // Display numbered pagination links
-                for ($i = $start; $i <= $end; $i++) {
-                    echo '<li class="page-item ' . ($i == $page ? 'active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
-                }
-
-                // Display next page link
-                if ($page < $total_pages) {
-                    echo '<li class="page-item"><a class="page-link" href="?page=' . ($page + 1) . '">&raquo;</a></li>';
+                for ($i = 1; $i <= $total_pages; $i++) {
+                    echo '<li class="page-item ' . ($page == $i ? 'active' : '') . '"><a class="page-link" href="front_desk_dashboard.php?page=' . $i . '">' . $i . '</a></li>';
                 }
                 ?>
             </ul>
