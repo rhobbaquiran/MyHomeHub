@@ -239,9 +239,9 @@ if (isset($_POST['add_submit'])) {
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/front_desk_sidebar.php" ?>
+    <?php include "../../includes/sidebars/tenant_sidebar.php" ?>
     <!-- import prompt styles -->
-    <?php include "../../includes/sidebars/front_desk_sidebar_prompt.php" ?>
+    <?php include "../../includes/sidebars/tenant_sidebar_prompt.php" ?>
 
     <div class="container">
         <div class="row">
