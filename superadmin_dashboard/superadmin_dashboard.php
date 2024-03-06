@@ -435,7 +435,7 @@ $result_pending = $query_pending->get_result();
                         <td style="white-space: nowrap; text-align: center;"><center>' . $condominium_status . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $payment_status . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . ($suspended == 1 ? 'Yes' : 'No') . '</center></td>
-                        <td><center><a href="uploads/' . $file_documents . '" target="_blank">' . $file_documents . '</a></center></td>
+                        <td><center><a href="../uploads/' . $file_documents . '" target="_blank">' . $file_documents . '</a></center></td>
                         <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">
                         <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>';
 
@@ -527,7 +527,7 @@ $result_pending = $query_pending->get_result();
                                 <td style="white-space: nowrap; text-align: center;"><center>' . $condominium_status . '</center></td>
                                 <td style="white-space: nowrap; text-align: center;"><center>' . $payment_status . '</center></td>
                                 <td style="white-space: nowrap; text-align: center;"><center>' . ($suspended == 1 ? 'Yes' : 'No') . '</center></td>
-                                <td><center><a href="uploads/' . $file_documents . '" target="_blank">' . $file_documents . '</a></center></td>
+                                <td><center><a href="../uploads/' . $file_documents . '" target="_blank">' . $file_documents . '</a></center></td>
                                 <td class="action-column action-buttons">
                                 <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>';
 
@@ -638,7 +638,7 @@ $result_pending = $query_pending->get_result();
                                 <td style="white-space: nowrap; text-align: center;"><center>' . $condominium_status . '</center></td>
                                 <td style="white-space: nowrap; text-align: center;"><center>' . $payment_status . '</center></td>
                                 <td style="white-space: nowrap; text-align: center;"><center>' . ($suspended == 1 ? 'Yes' : 'No') . '</center></td>
-                                <td><center><a href="uploads/' . $file_documents . '" target="_blank">' . $file_documents . '</a></center></td>
+                                <td><center><a href="../uploads/' . $file_documents . '" target="_blank">' . $file_documents . '</a></center></td>
                                 <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
 
                                 echo '<button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>';
