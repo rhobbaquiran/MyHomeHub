@@ -331,7 +331,7 @@ $stmt->close();
             <td style="white-space: nowrap; text-align: center;"><center>' . $username . '</center></td>
             <td style="white-space: nowrap; text-align: center;"><center>' . $bill_number . '</center></td>
             <td style="white-space: nowrap; text-align: center;">
-            <center><a href="../payment_proof' . $screenshot . '" download="' . basename($screenshot) . '">' . basename($screenshot) . '</a></center>
+            <center><a href="../../payment_proof' . $screenshot . '" download="' . basename($screenshot) . '">' . basename($screenshot) . '</a></center>
             </td>
             <td style="white-space: nowrap; text-align: center;"><center><strong>' . ($status === '' ? 'Rejected' : $status) . '</strong></center></td>
             <td style="white-space: nowrap; text-align: center;"><center><strong>' . ($rejection_reason === NULL ? '<em>Not Indicated</em>' : $rejection_reason) . '</strong></center></td>
