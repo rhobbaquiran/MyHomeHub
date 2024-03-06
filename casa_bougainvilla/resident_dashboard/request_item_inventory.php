@@ -33,6 +33,7 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $person_of_contact = $row['person_of_contact'];
+    $condominium_id = $row['id'];
 } else {
     $_SESSION['error'] = 'No data found for the given condominium ID.';
     header("Location: community_inventory.php");
@@ -43,6 +44,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data and remove whitespaces
     $item_name = trim($_POST['item']);
     $quantity = trim($_POST['quantity']);
+
+    // To get the condominium_id based on the selected condominium name
+    $condo_query = "SELECT id FROM condominiums WHERE name = ?";
+    $stmt_condo = $mysqli->prepare($condo_query);
+    $stmt_condo->bind_param("s", $condominium);
+    $stmt_condo->execute();
+    $stmt_condo->bind_result($condo_id);
+    $stmt_condo->fetch();
+    $stmt_condo->close();
+
+    // To get condominium name
+    $query_condo_name = "SELECT name FROM condominiums WHERE id = ?";
+    $stmt_condo_name = $mysqli->prepare($query_condo_name);
+    $stmt_condo_name->bind_param("i", $condominium_id);
+    $stmt_condo_name->execute();
+    $result_condo_name = $stmt_condo_name->get_result();
+
+    if ($result_condo_name->num_rows == 1) {
+        $condo_row = $result_condo_name->fetch_assoc();
+        $condominium_name = $condo_row['name'];
+    } else {
+        $_SESSION['error'] = 'Error retrieving condominium name.';
+        // handle error as per your application logic
+    }
+
+    $stmt_condo_name->close();
 
     // Retrieve email from the users table based on the item's contact person
     $person_of_contact_username = $row['person_of_contact'];
@@ -68,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Send email notification
     $username = $_SESSION['username'];
     $subject = 'Item Request Notification';
-    $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a request for the item: $item_name. Quantity: $quantity\n\n\nFrom,\n$username\nResident of Casa Bougainvilla";
+    $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a request for the item: $item_name. Quantity: $quantity\n\n\nFrom,\n$username\nResident of $condominium_name";
     $headers = 'From: adm1nplk2022@yahoo.com';
 
     // Use mail() function to send the email

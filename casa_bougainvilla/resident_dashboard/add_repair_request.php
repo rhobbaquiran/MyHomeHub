@@ -33,6 +33,7 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $person_of_contact_username = $row['person_of_contact'];
+    $condominium_id = $row['id'];
 } else {
     $_SESSION['error'] = 'No data found for the given condominium ID';
     header("Location: repair_request.php");
@@ -53,6 +54,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_condo->bind_result($condo_id);
     $stmt_condo->fetch();
     $stmt_condo->close();
+
+    // To get condominium name
+    $query_condo_name = "SELECT name FROM condominiums WHERE id = ?";
+    $stmt_condo_name = $mysqli->prepare($query_condo_name);
+    $stmt_condo_name->bind_param("i", $condominium_id);
+    $stmt_condo_name->execute();
+    $result_condo_name = $stmt_condo_name->get_result();
+
+    if ($result_condo_name->num_rows == 1) {
+        $condo_row = $result_condo_name->fetch_assoc();
+        $condominium_name = $condo_row['name'];
+    } else {
+        $_SESSION['error'] = 'Error retrieving condominium name.';
+        // handle error as per your application logic
+    }
+
+    $stmt_condo_name->close();
 
     // To fetch unit_number based on username
     $unit_query = "SELECT unit_number FROM units WHERE resident_id = ?";
@@ -91,8 +109,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $to = $email_row['email']; // Use the retrieved email for the 'to' field
             $username = $_SESSION['username'];
             $subject = 'Repair Request Notification';
-            $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a repair request with the following details:\n\nTitle: $heading\n\nDescription:\n$description\n\n\nFrom,\n$username\nResident of Casa Bougainvilla";
-            $headers = 'From: adm1nplk2022@yahoo.com'; // Change this to your email address or the email address you want to send from
+            $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a repair request with the following details:\n\nTitle: $heading\n\nDescription:\n$description\n\n\nFrom,\n$username\nResident of $condominium_name";
+            $headers = 'From: adm1nplk2022@yahoo.com'; 
 
             // Use mail() function to send the email
             if (mail($to, $subject, $message, $headers)) {

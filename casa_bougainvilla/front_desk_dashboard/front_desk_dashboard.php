@@ -60,7 +60,6 @@ $total_pages = ceil($total_rows / $limit);
 
 // Modify the main SQL query
 $sql = "SELECT * FROM visitors WHERE is_deleted = 0 AND condominium_id = 1 LIMIT $offset, $limit";
-$sql .= " LIMIT $offset, $limit";
 $query = $mysqli->query($sql);
 
 // Process search form submission

@@ -24,6 +24,28 @@ if (!isset($_GET['rejectid']) || empty($_GET['rejectid'])) {
     exit();
 }
 
+// To get person of contact
+$query = "SELECT condominiums.id, condominiums.person_of_contact FROM condominiums
+            LEFT JOIN users
+            ON condominiums.person_of_contact = users.username
+            WHERE condominiums.id = ?";
+
+$stmt = $mysqli->prepare($query);
+$stmt->bind_param("i", $_SESSION['condominium_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $person_of_contact_username = $row['person_of_contact'];
+    $condominium_id = $row['id'];
+    
+} else {
+    $_SESSION['error'] = 'No data found for the given condominium ID';
+    header("Location: repair_request.php");
+    exit();
+}
+
 // Retrieve title from the database based on the reject id
 $reject_id = $_GET['rejectid'];
 $sql = "SELECT heading, service_ticket.username, service_ticket.condominium_id, users.username AS resident_username 
@@ -48,6 +70,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_condo->bind_result($condo_id);
     $stmt_condo->fetch();
     $stmt_condo->close();
+
+    // To get condominium name
+    $query_condo_name = "SELECT name FROM condominiums WHERE id = ?";
+    $stmt_condo_name = $mysqli->prepare($query_condo_name);
+    $stmt_condo_name->bind_param("i", $condominium_id);
+    $stmt_condo_name->execute();
+    $result_condo_name = $stmt_condo_name->get_result();
+
+    if ($result_condo_name->num_rows == 1) {
+        $condo_row = $result_condo_name->fetch_assoc();
+        $condominium_name = $condo_row['name'];
+    } else {
+        $_SESSION['error'] = 'Error retrieving condominium name.';
+        // handle error as per your application logic
+    }
+
+    $stmt_condo_name->close();
 
     // To update the repair status
     $update_query = "UPDATE service_ticket SET status=2, date_finished=CURRENT_TIMESTAMP,  rejection_reason=? WHERE ticket_number=?";
@@ -80,7 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $username = $_SESSION['username'];
             $rejection_reason = trim($_POST['rejection_reason']);
             $subject = 'Repair Request Rejection Notification';
-            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been rejected with the following reason:\n\n$rejection_reason\n\n\nFrom,\n$username\nFront Desk of Casa Bougainvilla";
+            $message = "Dear Mr./Ms. $resident_username,\n\nYour repair request titled '$heading' has been rejected with the following reason:\n\n$rejection_reason\n\n\nFrom,\n$username\nFront Desk of $condominium_name";
             $headers = 'From:  adm1nplk2022@yahoo.com';
 
             // Send email notification
