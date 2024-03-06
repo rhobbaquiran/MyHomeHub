@@ -418,7 +418,7 @@ $stmt->close();
                         <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">';
 
                         // Update button
-                        echo '<button class="btn btn-primary"><a href="update_item_inventory.php?updateid=' . $id . '" class="text-light">Update</a></button>';
+                        echo '<button class="btn btn-primary"><a href="update_budget.php?updateid=' . $id . '" class="text-light">Update</a></button>';
 
                         // Delete button
                         echo '<button class="btn btn-danger delete-item" data-id="' . $id . '">Delete</button>';
