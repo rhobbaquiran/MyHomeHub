@@ -91,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $to = $email_row['email']; // Use the retrieved email for the 'to' field
             $username = $_SESSION['username'];
             $subject = 'Repair Request Notification';
-            $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a repair request with the following details:\n\nTitle:\n\n $heading\n\nDescription:\n\n $description\n\n\nFrom,\n$username\nResident of Casa Bougainvilla";
+            $message = "Dear Mr./Ms. $person_of_contact_username,\n\nYou have received a repair request with the following details:\n\nTitle: $heading\n\nDescription:\n$description\n\n\nFrom,\n$username\nResident of Casa Bougainvilla";
             $headers = 'From: adm1nplk2022@yahoo.com'; // Change this to your email address or the email address you want to send from
 
             // Use mail() function to send the email
