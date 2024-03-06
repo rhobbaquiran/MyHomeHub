@@ -340,6 +340,8 @@ $totalPages = ceil($totalRows / $rowsPerPage);
                             </thead>
                             <tbody id="suspendedAccountsTableBody">
                                 <?php
+                                // Set the timezone to Philippines
+                                date_default_timezone_set('Asia/Manila');
                                 // Fetch data from the users table
                                 $queryUsers = "SELECT account_number, username AS name, email, role, suspended, suspend_timestamp FROM users WHERE role = 'Front Desk' AND condominium_id = $condominium_id";
                                 $resultUsers = $mysqli->query($queryUsers);
