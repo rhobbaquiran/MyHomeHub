@@ -215,9 +215,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body>
     <!-- Sidebar Import -->
-    <?php include "../../includes/sidebars/resident_sidebar.php" ?>
+    <?php include "../../includes/sidebars/administrator_sidebar.php" ?>
     <!-- import prompt styles -->
-    <?php include "../../includes/sidebars/resident_sidebar_prompt.php" ?>
+    <?php include "../../includes/sidebars/administrator_sidebar_prompt.php" ?>
 
     <div class="container">
         <div class="row">
