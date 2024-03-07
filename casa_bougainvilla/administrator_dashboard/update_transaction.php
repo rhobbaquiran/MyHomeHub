@@ -21,6 +21,28 @@ if (!isset($_GET['updateid']) || empty($_GET['updateid'])) {
     exit();
 }
 
+// To get person of contact
+$query = "SELECT condominiums.id, condominiums.person_of_contact FROM condominiums
+            LEFT JOIN users
+            ON condominiums.person_of_contact = users.username
+            WHERE condominiums.id = ?";
+
+$stmt = $mysqli->prepare($query);
+$stmt->bind_param("i", $_SESSION['condominium_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $person_of_contact_username = $row['person_of_contact'];
+    $condominium_id = $row['id'];
+    
+} else {
+    $_SESSION['error'] = 'No data found for the given condominium ID';
+    header("Location: transactions.php");
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $updateId = $_POST['update_id'];
     $billingPeriodStart = trim($_POST['billing_period_start']);
@@ -30,6 +52,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $status = trim($_POST['status']);
     $selectedResident = trim($_POST['selected_resident']);
     $billNumber = trim($_POST['bill_number']);
+
+    // Get the condominium_id based on the selected condominium name
+    $condo_query = "SELECT id FROM condominiums WHERE name = ?";
+    $stmt_condo = $mysqli->prepare($condo_query);
+    $stmt_condo->bind_param("s", $condominium);
+    $stmt_condo->execute();
+    $stmt_condo->bind_result($condo_id);
+    $stmt_condo->fetch();
+    $stmt_condo->close();
+
+    // To get condominium name
+    $query_condo_name = "SELECT name FROM condominiums WHERE id = ?";
+    $stmt_condo_name = $mysqli->prepare($query_condo_name);
+    $stmt_condo_name->bind_param("i", $condominium_id);
+    $stmt_condo_name->execute();
+    $result_condo_name = $stmt_condo_name->get_result();
+
+    if ($result_condo_name->num_rows == 1) {
+        $condo_row = $result_condo_name->fetch_assoc();
+        $condominium_name = $condo_row['name'];
+    } else {
+        $_SESSION['error'] = 'Error retrieving condominium name.';
+        // handle error as per your application logic
+    }
+
+    $stmt_condo_name->close();
 
     // Extract account number and resident username from the selected resident
     list($selectedResidentAccount, $residentUsername) = explode("-", $selectedResident);
@@ -86,7 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $billing_details = "================\n• Account Number: $selectedResidentAccount\n• Bill Number: $billNumber\n• Billing Period: $billingPeriodStart to $billingPeriodEnd\n• Total Amount Due: ₱ $totalAmountDue\n• Due Date: $dueDate\n• Payment Status: $paymentStatus\n================\n";
                 $to = $userEmail;
                 $subject = "Payment $paymentStatus for Bill $billNumber";
-                $message = "Dear Mr./Ms. $residentUsername,\nThe Payment for Bill $billNumber has been $paymentStatus. Here are your Bill details:\n\n$billing_details\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$email\n\nRegards, \n$username\n$role of Casa Bougainvilla";
+                $message = "Dear Mr./Ms. $residentUsername,\nThe Payment for Bill $billNumber has been $paymentStatus. Here are your Bill details:\n\n$billing_details\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$email\n\nRegards, \n$username\n$role of $condominium_name";
                 $headers = "From: adm1nplk2022@yahoo.com";
 
                 // Use the mail() function to send the email

@@ -47,6 +47,27 @@ function generateAccountNumber()
     return null;
 }
 
+// To get condominium id
+$query = "SELECT condominiums.id, condominiums.person_of_contact FROM condominiums
+            LEFT JOIN users
+            ON condominiums.person_of_contact = users.username
+            WHERE condominiums.id = ?";
+
+$stmt = $mysqli->prepare($query);
+$stmt->bind_param("i", $_SESSION['condominium_id']);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $condominium_id = $row['id'];
+    
+} else {
+    $_SESSION['error'] = 'No data found for the given condominium ID';
+    header("Location: administrator_dashboard.php");
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data and remove whitespaces
     $name = trim($_POST['username']);
@@ -79,6 +100,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_condo->fetch();
     $stmt_condo->close();
 
+     // To get condominium name
+     $query_condo_name = "SELECT name FROM condominiums WHERE id = ?";
+     $stmt_condo_name = $mysqli->prepare($query_condo_name);
+     $stmt_condo_name->bind_param("i", $condominium_id);
+     $stmt_condo_name->execute();
+     $result_condo_name = $stmt_condo_name->get_result();
+ 
+     if ($result_condo_name->num_rows == 1) {
+         $condo_row = $result_condo_name->fetch_assoc();
+         $condominium_name = $condo_row['name'];
+     } else {
+         $_SESSION['error'] = 'Error retrieving condominium name.';
+     }
+ 
+     $stmt_condo_name->close();
+
     // Insert into users table
     $insert_query = "INSERT INTO users (account_number, username, email, password, condominium_id, suspended, role, dashboard_url) VALUES (?, ?, ?, ?, ?, 0, ?, ?)";
     $stmt = $mysqli->prepare($insert_query);
@@ -104,7 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $to = $email; 
         $subject = "Your Account has been Activated for $condominium";
         $account_details = "================\n• Account Number: $accountNumber\n• Username: $name\n• Email: $email\n• Password: $temporaryPassword\n• Role: $role\n================\n";
-        $message = "Dear Mr./Ms. $name,\n\nYour account has been activated for $condominium condominium.  Here are the following details: \n\n$account_details\nFor the security of your account, we recommend changing your password immediately by clicking the 'Forgot Password?' link at the Login Page.\n\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$emailSession\n\nRegards, \n$username\n$roleSession of Casa Bougainvilla";
+        $message = "Dear Mr./Ms. $name,\n\nYour account has been activated for $condominium condominium.  Here are the following details: \n\n$account_details\nFor the security of your account, we recommend changing your password immediately by clicking the 'Forgot Password?' link at the Login Page.\n\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$emailSession\n\nRegards, \n$username\n$roleSession of $condominium_name";
         $headers = 'From: adm1nplk2022@yahoo.com'; 
         
         // Send suspension notice via email
