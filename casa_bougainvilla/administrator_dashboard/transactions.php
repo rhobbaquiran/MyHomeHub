@@ -133,7 +133,7 @@ if (isset($_GET['deleteid'])) {
         }
 
         .pending {
-            color: red;
+            color: orange;
         }
 
         .paid {

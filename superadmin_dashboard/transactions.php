@@ -153,7 +153,7 @@ $stmt->close();
         }
 
         .pending {
-            color: red;
+            color: orange;
         }
 
         .paid {

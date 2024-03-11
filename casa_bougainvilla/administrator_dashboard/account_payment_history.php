@@ -106,7 +106,7 @@ $stmt->close();
         }
 
         .unverified {
-            color: red;
+            color: orange;
         }
 
         .verified {
