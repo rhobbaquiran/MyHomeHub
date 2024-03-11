@@ -412,7 +412,6 @@ if (isset($_GET['deleteid'])) {
                             <td style="white-space: nowrap; text-align: center;"><center>' . $purpose . '</center></td>
                             <td class="action-column action-buttons" style="white-space: nowrap;">
                                 <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                                <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
                             </td>
                         </tr>';
                 }
@@ -482,7 +481,6 @@ if (isset($_GET['deleteid'])) {
                         <td style="white-space: nowrap; text-align: center;"><center>' . $purpose . '</center></td>
                         <td class="action-column action-buttons" style="white-space: nowrap;">
                             <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                            <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
                         </td>
                         </tr>';
                         }

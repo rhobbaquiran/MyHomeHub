@@ -422,7 +422,6 @@ $stmt->close();
             <td style="white-space: nowrap; text-align: center;"><center><strong>' . ($rejection_reason === NULL ? '<em>Not Indicated</em>' : $rejection_reason) . '</strong></center></td>
             <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">
                 <button class="btn btn-primary"><a href="update_proof_of_payments.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
             </td>
         </tr>';
                 }
@@ -503,7 +502,6 @@ $stmt->close();
             <td style="white-space: nowrap; text-align: center;"><center><strong>' . ($rejection_reason === NULL ? '<em>Not Indicated</em>' : $rejection_reason) . '</strong></center></td>
             <td class="action-column action-buttons" style="white-space: nowrap; text-align: center;">
                 <button class="btn btn-primary"><a href="update_proof_of_payments.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
             </td>
         </tr>';
                             }
