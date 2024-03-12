@@ -98,9 +98,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Send email to the administrator
+    $emailSession = $_SESSION['email'];
     $to = $adminEmail;
-    $emailSubject = "12 Monthly Bills Notification";
-    $emailBody = "Dear Mr./Ms. $adminUsername,\n\nYou have received 12 monthly bills for the condominium $condoName.";
+    $emailSubject = "12 Monthly Bills for $condoName";
+    $emailBody = "Dear Mr./Ms. $adminUsername,\n\nYou have received 12 monthly bills for the $condoName condominium.\n\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$emailSession\n\nRegards,\nMyHomeHub Team";
     $headers = "From: adm1nplk2022@yahoo.com"; // Update with your email address
     mail($adminEmail, $emailSubject, $emailBody, $headers);
 
