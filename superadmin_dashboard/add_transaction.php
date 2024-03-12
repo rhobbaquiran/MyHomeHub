@@ -60,6 +60,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $totalAmountDue = trim($_POST['total_amount_due']);
     $status = trim($_POST['status']);
     $selectedAdmin = $_POST['selected_admin'];
+    
+    // Define the number of days after the end of the billing period
+    $daysAfterBillingEnd = trim($_POST['due_date']);
 
     // Extract account number and condominium name from the selected administrator
     list($selectedAdminAccount, $condoName) = explode("-", $selectedAdmin);
@@ -77,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $currentDate = new DateTime($billingPeriodStart);
     for ($i = 0; $i < 12; $i++) {
         $billingPeriodEnd = $currentDate->format('Y-m-t');
-        $dueDate = date('Y-m-d', strtotime('+10 days', strtotime($billingPeriodEnd))); // Due date is set to 10 days after the end of billing period
+        $dueDate = date('Y-m-d', strtotime('+' . $daysAfterBillingEnd . ' days', strtotime($billingPeriodEnd))); // Due date is set to flexible days after the end of billing period
 
         // Generate unique bill number
         $billNumber = generateUniqueNumber("bill_number", "admin_transactions");
@@ -225,8 +228,8 @@ html,body{
                     </div>
 
                     <div class="form-group">
-                        <label for="due_date">Due Date:</label>
-                        <input type="date" class="form-control" name="due_date" required>
+                        <label for="due_date">Amount of Days for Due Date:</label>
+                        <input type="text" class="form-control" name="due_date" required>
                     </div>
 
                     <div class="form-group">
