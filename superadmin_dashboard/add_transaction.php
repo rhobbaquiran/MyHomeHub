@@ -48,7 +48,7 @@ function generateUniqueNumber($column, $table)
 }
 
 // Get the list of administrators and their associated condominiums
-$adminCondoQuery = "SELECT users.account_number, users.username, condominiums.name 
+$adminCondoQuery = "SELECT users.account_number, users.username, users.email, condominiums.name 
                    FROM users 
                    INNER JOIN condominiums ON users.condominium_id = condominiums.id 
                    WHERE users.role = 'Administrator'";
@@ -56,10 +56,7 @@ $adminCondoResult = $mysqli->query($adminCondoQuery);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data and remove whitespaces
-    $billNumber = generateUniqueNumber("bill_number", "admin_transactions");
     $billingPeriodStart = $_POST['billing_period_start'];
-    $billingPeriodEnd = $_POST['billing_period_end'];
-    $dueDate = $_POST['due_date'];
     $totalAmountDue = trim($_POST['total_amount_due']);
     $status = trim($_POST['status']);
     $selectedAdmin = $_POST['selected_admin'];
@@ -67,60 +64,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Extract account number and condominium name from the selected administrator
     list($selectedAdminAccount, $condoName) = explode("-", $selectedAdmin);
 
-    // Insert into admin_transactions table
-    $insert_query = "INSERT INTO admin_transactions (bill_number, account_number, billing_period_start, billing_period_end, due_date, total_amount_due, status, is_deleted, condominium) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)";
-    $stmt = $mysqli->prepare($insert_query);
+    // Retrieve the administrator's email address
+    $adminEmailQuery = "SELECT email, username FROM users WHERE account_number = ?";
+    $stmtAdminEmail = $mysqli->prepare($adminEmailQuery);
+    $stmtAdminEmail->bind_param("s", $selectedAdminAccount);
+    $stmtAdminEmail->execute();
+    $stmtAdminEmail->bind_result($adminEmail, $adminUsername);
+    $stmtAdminEmail->fetch();
+    $stmtAdminEmail->close();
 
-    // Check for prepare error
-    if ($stmt === false) {
-        die("Error preparing statement: " . $mysqli->error);
+    // Use while loop to generate 12 monthly bills
+    $currentDate = new DateTime($billingPeriodStart);
+    for ($i = 0; $i < 12; $i++) {
+        $billingPeriodEnd = $currentDate->format('Y-m-t');
+        $dueDate = date('Y-m-d', strtotime('+10 days', strtotime($billingPeriodEnd))); // Due date is set to 10 days after the end of billing period
+
+        // Generate unique bill number
+        $billNumber = generateUniqueNumber("bill_number", "admin_transactions");
+
+        // Insert into admin_transactions table
+        $insert_query = "INSERT INTO admin_transactions (bill_number, account_number, billing_period_start, billing_period_end, due_date, total_amount_due, status, is_deleted, condominium) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)";
+        $stmt = $mysqli->prepare($insert_query);
+
+        // Bind parameters
+        $stmt->bind_param("ssssssss", $billNumber, $selectedAdminAccount, $billingPeriodStart, $billingPeriodEnd, $dueDate, $totalAmountDue, $status, $condoName);
+
+        // Execute the statement
+        $stmt->execute();
+
+        // Increment to next month
+        $currentDate->modify('+1 month');
+        $billingPeriodStart = $currentDate->format('Y-m-01');
     }
 
-    // Bind parameters
-    $bindResult = $stmt->bind_param("ssssssss", $billNumber, $selectedAdminAccount, $billingPeriodStart, $billingPeriodEnd, $dueDate, $totalAmountDue, $status, $condoName);
-
-    // Check for bind_param error
-    if ($bindResult === false) {
-        die("Error binding parameters: " . $stmt->error);
-    }
-
-    // Execute the statement
-    $executeResult = $stmt->execute();
-
-    // Check for execute error
-    if ($executeResult === false) {
-        die("Error executing statement: " . $stmt->error);
-    }
-
-    // Send email to the user
-    $emailSubject = "New Bill for the period $billingPeriodStart to $billingPeriodEnd";
-
-    // Retrieve user's email and username using the account number
-    $emailQuery = "SELECT email, username FROM users WHERE account_number = ?";
-    $stmtEmail = $mysqli->prepare($emailQuery);
-    $stmtEmail->bind_param("s", $selectedAdminAccount);
-    $stmtEmail->execute();
-    $stmtEmail->bind_result($userEmail, $userUsername);
-    $stmtEmail->fetch();
-    $stmtEmail->close();
-    
-    // Check if the email retrieval was successful
-    if ($userEmail) 
-    {
-        $email = $_SESSION['email'];
-
-        $billing_details = "================\n• Account Number: $selectedAdminAccount\n• Bill Number: $billNumber\n• Billing Period: $billingPeriodStart to $billingPeriodEnd\n• Total Amount Due: ₱ $totalAmountDue\n• Due Date: $dueDate\n================\n";
-
-        $emailBody = "Dear Mr./Ms. $userUsername,\n\nKindly settle your Bill on or before the due date to avoid any service interruptions. Here are the following details: \n\n$billing_details\nIf you have any questions or concerns, please don't hesitate to reach us at:\n$email\n\nRegards, \nMyHomeHub Team";
-    
-        $headers = "From: adm1nplk2022@yahoo.com";  // Change this to your email address
-        mail($userEmail, $emailSubject, $emailBody, $headers);
-    }
+    // Send email to the administrator
+    $to = $adminEmail;
+    $emailSubject = "12 Monthly Bills Notification";
+    $emailBody = "Dear Mr./Ms. $adminUsername,\n\nYou have received 12 monthly bills for the condominium $condoName.";
+    $headers = "From: adm1nplk2022@yahoo.com"; // Update with your email address
+    mail($adminEmail, $emailSubject, $emailBody, $headers);
 
     // Check for success
-    $_SESSION['success'] = 'Transaction added successfully.';
+    $_SESSION['success'] = '12 Monthly Bills generated successfully.';
     // Log the activity
-    logActivity($_SESSION['username'], "Added transaction of $condoName with Bill Number: $billNumber", $condoName);
+    logActivity($_SESSION['username'], "Added 12 monthly bills for $condoName", $condoName);
 
     $stmt->close();
     header("Location: transactions.php");
@@ -268,5 +255,4 @@ html,body{
         </div>
     </div>
 </body>
-
 </html>
