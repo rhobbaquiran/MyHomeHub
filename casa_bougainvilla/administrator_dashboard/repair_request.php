@@ -251,8 +251,8 @@ function getStatusLabel($status)
                                     <div>Date Issued: <?php echo $date_issued; ?></div>
                                     <div>Title: <?php echo $heading; ?></div>
                                     <div>Description: <?php echo $description; ?></div>
-                                    <div>Status: <span style="font-weight: bold;"><?php echo getStatusLabel($status); ?></span></div>
-                                    <div>Date Finished: <span style="font-weight: bold;"><?php echo $date_finished === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
+                                    <div>Status: <span style="font-weight: bold; color: #F29339;"><?php echo getStatusLabel($status); ?></span></div>
+                                    <div>Date Finished: <span style="font-weight: bold; color: #F29339;"><?php echo $date_finished === '0000-00-00' ? "Pending" : $row['date_finished']; ?></span></div>
                                     <?php if ($status == 2) : ?>
                                         <div>Rejection Reason: <?php echo $rejection_reason; ?></div>
                                     <?php endif; ?>
@@ -294,7 +294,7 @@ function getStatusLabel($status)
                                         $statusColor = '';
                                         switch ($status) {
                                             case 0:
-                                                $statusColor = 'blue'; // Pending
+                                                $statusColor = 'orange'; // Pending
                                                 break;
                                             case 1:
                                                 $statusColor = 'green'; // Resolved
