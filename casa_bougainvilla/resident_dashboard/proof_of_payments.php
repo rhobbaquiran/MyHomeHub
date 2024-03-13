@@ -204,12 +204,8 @@ $stmt->close();
             text-align: center;
             /* Center the buttons within the padded area */
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             /* Add space between buttons */
-        }
-
-        .action-buttons button {
-            margin-right: 5px;
         }
 
         th.action-column,
