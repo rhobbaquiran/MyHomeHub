@@ -131,12 +131,15 @@ $result = $mysqli->query($sql);
         }
         .container .form{
             background: #fff;
+            width: 500px;
             padding: 30px 35px;
             border-radius: 5px;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            margin: 0 auto;
         }
         .container .form form .form-control{
             height: 40px;
+            width: 400px;
             font-size: 15px;
         }
         .container .form form .forget-pass{
@@ -178,7 +181,7 @@ $result = $mysqli->query($sql);
 
     <div class="container">
         <div class="row">
-            <div class="col-md-4 offset-md-4 form">
+            <div class="col-md-5 offset-md-5 form">
                 <form method="post" enctype="multipart/form-data">
                     <h2 class="text-center">Bill Payment</h2>
                     <center><img src="../../uploads/qrcode.png" width="300" height="250"></center><br>
