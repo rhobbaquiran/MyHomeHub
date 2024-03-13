@@ -286,12 +286,8 @@ if (isset($_GET['deleteid'])) {
             text-align: center;
             /* Center the buttons within the padded area */
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             /* Add space between buttons */
-        }
-
-        .action-buttons button {
-            margin-right: 5px;
         }
 
         th.action-column,
@@ -480,7 +476,9 @@ if (isset($_GET['deleteid'])) {
                         <td style="white-space: nowrap; text-align: center;"><center>' . $departure_time . '</center></td>
                         <td style="white-space: nowrap; text-align: center;"><center>' . $purpose . '</center></td>
                         <td class="action-column action-buttons" style="white-space: nowrap;">
-                            <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                            <div style="display: flex; justify-content: center;">
+                                <button class="btn btn-primary"><a href="update.php?updateid=' . $id . '" class="text-light">Update</a></button>
+                            </div>
                         </td>
                         </tr>';
                         }
