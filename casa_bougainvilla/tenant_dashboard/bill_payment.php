@@ -101,7 +101,7 @@ if (isset($_POST['add_submit'])) // add_submit is the name of the button
     }
 }
 
-$sql = "SELECT bill_number FROM tenant_transactions WHERE account_number = '$account_number' AND status = 'Pending' AND is_deleted = 0";
+$sql = "SELECT bill_number, billing_period_start, billing_period_end, total_amount_due FROM tenant_transactions WHERE account_number = '$account_number' AND status = 'Pending' AND is_deleted = 0";
 $result = $mysqli->query($sql);
 ?>
 
@@ -193,7 +193,11 @@ $result = $mysqli->query($sql);
                             if (mysqli_num_rows($result) > 0) {
                                 while ($row = mysqli_fetch_assoc($result)) {
                                     $bill_number = $row['bill_number'];
-                                    echo "<option value='$bill_number'>$bill_number</option>";
+                                    $billing_period_start = $row['billing_period_start'];
+                                    $billing_period_end = $row['billing_period_end'];
+                                    $total_amount_due = $row['total_amount_due'];
+
+                                    echo "<option value='$bill_number'>$bill_number | $billing_period_start | $billing_period_end | $total_amount_due</option>";
                                 }
                             } else {
                                 echo "<option value='' disabled selected>No Pending Bills</option>";
