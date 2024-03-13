@@ -297,6 +297,7 @@ if (isset($search_result) && $search_result->num_rows > 0) {
                         <th scope="col" style="white-space: nowrap; text-align: center;"><center>Status</center></th>
                         <th scope="col" style="white-space: nowrap; text-align: center;"><center>Resident (Owner)</center></th>
                         <th scope="col" style="white-space: nowrap; text-align: center;"><center>Tenant</center></th>
+                        <th scope="col" style="white-space: nowrap; text-align: center;"><center>Active Status</center></th>
                         <th class="action-column" scope="col" style="white-space: nowrap; text-align: center;"><center>Action</center></th>
                     </tr>
                 </thead>
@@ -323,12 +324,16 @@ if (isset($search_result) && $search_result->num_rows > 0) {
                     $unit_status = $row['unit_status'];
                     $resident = $row['resident_id'];
                     $tenant = $row['tenant_id'];
+                    $inactive = $row['inactive'];
+
+                    $status = ($inactive == 0) ? "Active" : "Inactive";
                 
                     echo '<tr>
                             <th scope="row" style="white-space: nowrap; text-align: center;"><center>' . $unit_number . '</center></th>
                             <td style="white-space: nowrap; text-align: center;"><center>' . $unit_status . '</center></td>
                             <td style="white-space: nowrap; text-align: center;"><center>' . ($resident ? $resident : '<i>Not Indicated</i>') . '</center></td>
                             <td style="white-space: nowrap; text-align: center;"><center>' . ($tenant ? $tenant : '<i>Not Indicated</i>') . '</center></td>
+                            <td style="white-space: nowrap; text-align: center;"><center>' . $status . '</center></td>
                             <td class="action-column action-buttons" style="white-space: nowrap;">
                             <center><button class="btn btn-primary  mx-5"><a href="update_unit.php?updateid=' . $id . '" class="text-light">Update</a></button></center>
                             </td>

@@ -31,6 +31,9 @@ if (!in_array($_SESSION['role'], $allowed_roles)) {
     exit();
 }
 
+// To process the unit number from the URL parameters
+$unit_number = isset($_GET['unit_number']) ? $_GET['unit_number'] : '';
+
 // Function to log activity
 function logActivity($user, $action, $condominium_id)
 {
@@ -70,38 +73,41 @@ if (isset($_POST['searchButton'])) {
     }
 }
 
-// Soft Delete functionality
-if (isset($_GET['deleteid'])) {
-    $delete_id = $_GET['deleteid'];
+// Active / Inactive Functionality
+if (isset($_GET['inactiveid'])) {
+    $inactive_id = $_GET['inactiveid'];
+    $new_inactive_status = isset($_GET['inactive']) ? intval($_GET['inactive']) : 1; // Default to 1 if inactive is not set
 
     // Get the condominium ID from the session
     $condominium_id = $_SESSION['condominium_id'];
 
-    // Get the details before soft deleting
-    $select_query = "SELECT unit_number, resident_id FROM units WHERE id = ? AND is_deleted = 0";
+    // Get the details before setting status
+    $select_query = "SELECT unit_number, resident_id FROM units WHERE id = ? AND inactive = ?";
     $stmt_select = $mysqli->prepare($select_query);
-    $stmt_select->bind_param("i", $delete_id);
+    $stmt_select->bind_param("ii", $inactive_id, $new_inactive_status);
     $stmt_select->execute();
     $stmt_select->bind_result($unit_number, $resident_id);
     $stmt_select->fetch();
     $stmt_select->close();
 
-    // Soft Delete record
-    $update_query = "UPDATE units SET is_deleted = 1 WHERE id = ? AND is_deleted = 0";
+    // To determine the value for the opposite of the new inactive status
+    $opposite_inactive_status = ($new_inactive_status == 0) ? 1 : 0;
+
+    // Sets status of record
+    $update_query = "UPDATE units SET inactive = ? WHERE id = ? AND inactive = ?";
     $stmt = $mysqli->prepare($update_query);
 
-    // Bind parameter
-    $stmt->bind_param("i", $delete_id);
+    // Bind parameters
+    $stmt->bind_param("iii", $new_inactive_status, $inactive_id, $opposite_inactive_status);
     $stmt->execute();
 
     // Check for success
     if ($stmt->affected_rows > 0) {
-        $_SESSION['success'] = 'Unit deleted successfully.';
+        $_SESSION['success'] = 'Unit status updated successfully.';
         // Log the activity with the condominium_id
-        //logActivity($_SESSION['username'], "Deleted Unit $unit_number of Resident: $resident_id", $resident_id);
-        logActivity($_SESSION['username'], "Deleted Unit $unit_number", $resident_id);
+        logActivity($_SESSION['username'], "Unit $unit_number status updated to " . ($new_inactive_status ? 'Inactive' : 'Active'), $condominium_id);
     } else {
-        $_SESSION['error'] = 'Error deleting record: ' . $stmt->error;
+        $_SESSION['error'] = 'Error updating unit status: ' . $stmt->error;
     }
 
     $stmt->close();
@@ -123,13 +129,10 @@ if (isset($_GET['deleteid'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
 
-    <link rel="stylesheet" type="text/css"
-        href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap.min.css">
-    <link rel="stylesheet" type="text/css"
-        href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.default.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.default.min.css">
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Units</title>
@@ -292,6 +295,12 @@ if (isset($_GET['deleteid'])) {
                     $unit_status = $row['unit_status'];
                     $resident = $row['resident_id'];
                     $tenant = $row['tenant_id'];
+                    $inactive_id = $row['inactive'];
+
+                    // To Determine the button color and text based on the value of the `inactive` column
+                    $buttonColor = ($inactive == 0) ? 'success' : 'danger';
+                    $buttonText = ($inactive == 0) ? 'Active' : 'Inactive';
+
 
                     echo '<tr>
         <th scope="row" style="white-space: nowrap; text-align: center;"><center>' . $unit_number . '</center></th>
@@ -300,7 +309,7 @@ if (isset($_GET['deleteid'])) {
             <td style="white-space: nowrap; text-align: center;"><center>' . ($tenant ? $tenant : '<i>Not Indicated</i>') . '</center></td>
             <td class="action-column action-buttons" style="white-space: nowrap;">
                 <button class="btn btn-primary"><a href="update_unit.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
+                <button class="btn btn-' . $buttonColor . '" onclick="updateStatus(' . $id . ', ' . $inactive . ')">' . $buttonText . '</button>
             </td>
         </tr>';
                 }
@@ -349,6 +358,11 @@ if (isset($_GET['deleteid'])) {
                             $unit_status = $row['unit_status'];
                             $resident = $row['resident_id'];
                             $tenant = $row['tenant_id'];
+                            $inactive = $row['inactive'];
+
+                            // To determine the button color and text based on the value of the `inactive` column
+                            $buttonColor = ($inactive == 0) ? 'success' : 'danger';
+                            $buttonText = ($inactive == 0) ? 'Active' : 'Inactive';
 
                             echo '<tr>
                         <th scope="row" style="white-space: nowrap; text-align: center;"><center>' . $unit_number . '</center></th>
@@ -356,8 +370,8 @@ if (isset($_GET['deleteid'])) {
                             <td style="white-space: nowrap; text-align: center;"><center>' . ($resident ? $resident : '<i>Not Indicated</i>') . '</center></td>
                             <td style="white-space: nowrap; text-align: center;"><center>' . ($tenant ? $tenant : '<i>Not Indicated</i>') . '</center></td>
                             <td class="action-column action-buttons" style="white-space: nowrap;">
-                                <button class="btn btn-primary"><a href="update_unit.php?updateid=' . $id . '" class="text-light">Update</a></button>
-                                <button class="btn btn-danger" data-id="' . $id . '">Delete</button>
+                            <button class="btn btn-primary"><a href="update_unit.php?updateid=<?php echo $id; ?>" class="text-light">Update</a></button>
+                            <button class="btn btn-' . $buttonColor . '" onclick="updateStatus(' . $id . ', ' . $inactive . ', \'' . $unit_number . '\')">' . $buttonText . '</button>
                             </td>
                     </tr>';
                         }
@@ -386,26 +400,16 @@ if (isset($_GET['deleteid'])) {
                     window.print();
                 }
 
-                document.querySelectorAll('.action-buttons .btn-danger').forEach(button => {
-                    button.addEventListener('click', function () {
-                        const id = this.getAttribute('data-id');
-                        const text = "Are you sure you want to delete this transaction?";
+                function updateStatus(id, inactive, unit_number) {
+                    const newText = (inactive === 0) ? 'Inactive' : 'Active';
+                    const confirmText = `Are you sure you want to set unit ${unit_number}'s status to ${newText}?`;
 
-                        // Use the built-in confirm dialog
-                        if (window.confirm(text)) {
-                            window.location = "units.php?deleteid=" + id;
-                        }
-                    });
-                });
-
-                function confirmDelete(id) {
-                    let text = "Are you sure you want to delete this transaction?";
-                    if (confirm(text)) {
-                        window.location = "units.php?deleteid=" + id;
+                    if (window.confirm(confirmText)) {
+                        window.location = 'units.php?inactiveid=' + id + '&inactive=' + ((inactive === 0) ? 1 : 0) + '&unit_number=' + unit_number;
                     }
                 }
 
-                $(document).ready(function () {
+                $(document).ready(function() {
                     // Apply TableSorter to sort tables
                     $('#TableSorter,#TableSorter2,#TableSorter3').tablesorter({
                         theme: 'bootstrap'

@@ -269,6 +269,7 @@ if (isset($_GET['deleteid'])) {
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Status</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Resident (Owner)</center></th>';
                 echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Tenant</center></th>';
+                echo '<th scope="col" style="white-space: nowrap; text-align: center;"><center>Active Status</center></th>';
                 echo '</tr>';
                 echo '</thead>';
                 echo '<tbody>';
@@ -279,12 +280,16 @@ if (isset($_GET['deleteid'])) {
                     $unit_status = $row['unit_status'];
                     $resident = $row['resident_id'];
                     $tenant = $row['tenant_id'];
+                    $inactive = $row['inactive'];
+
+                    $status = ($inactive == 0) ? "Active" : "Inactive";
 
                     echo '<tr>
         <th scope="row" style="white-space: nowrap; text-align: center;"><center>' . $unit_number . '</center></th>
             <td style="white-space: nowrap; text-align: center;"><center>' . $unit_status . '</center></td>
             <td style="white-space: nowrap; text-align: center;"><center>' . ($resident ? $resident : '<i>Not Indicated</i>') . '</center></td>
             <td style="white-space: nowrap; text-align: center;"><center>' . ($tenant ? $tenant : '<i>Not Indicated</i>') . '</center></td>
+            <td style="white-space: nowrap; text-align: center;"><center>' . $status .'</center></td>
         </tr>';
                 }
 
@@ -312,6 +317,9 @@ if (isset($_GET['deleteid'])) {
                             <th scope="col" style="white-space: nowrap; text-align: center;">
                                 <center>Tenant</center>
                             </th>
+                            <th scope="col" style="white-space: nowrap; text-align: center;">
+                                <center>Active Status</center>
+                            </th>
                         </tr>
                     </thead>
 
@@ -337,12 +345,16 @@ if (isset($_GET['deleteid'])) {
                             $unit_status = $row['unit_status'];
                             $resident = $row['resident_id'];
                             $tenant = $row['tenant_id'];
+                            $inactive = $row['inactive'];
+
+                            $status = ($inactive == 0) ? "Active" : "Inactive";
 
                             echo '<tr>
                             <th scope="row" style="white-space: nowrap; text-align: center;"><center>' . $unit_number . '</center></th>
                             <td style="white-space: nowrap; text-align: center;"><center>' . $unit_status . '</center></td>
                             <td style="white-space: nowrap; text-align: center;"><center>' . ($resident ? $resident : '<i>Not Indicated</i>') . '</center></td>
                             <td style="white-space: nowrap; text-align: center;"><center>' . ($tenant ? $tenant : '<i>Not Indicated</i>') . '</center></td>
+                            <td style="white-space: nowrap; text-align: center;"><center>' . $status . '</center></td>
                           </tr>';
                         }
 
