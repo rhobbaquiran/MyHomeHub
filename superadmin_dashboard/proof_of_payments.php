@@ -289,12 +289,8 @@ $stmt->close();
             text-align: center;
             /* Center the buttons within the padded area */
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             /* Add space between buttons */
-        }
-
-        .action-buttons button {
-            margin-right: 5px;
         }
 
         th.action-column,
@@ -306,7 +302,7 @@ $stmt->close();
         .rejected {
             background-color: red;
             /* Set the background color to red for "Rejected" status */
-            color: white;
+            color: red;
             /* Set the text color to white for better visibility */
         }
 
@@ -409,7 +405,14 @@ $stmt->close();
                     $rejection_reason = $row['rejection_reason'];
 
                     // Set the class based on the status for conditional styling
-                    $statusClass = ($status == 'Unverified' || $status != 'Verified') ? 'unverified' : ($status == 'Rejected' ? 'rejected' : 'verified');
+                    $statusClass = '';
+                    if (empty($status)) {
+                        $statusClass = 'rejected'; // If status is null or empty, set to red
+                    } elseif ($status == 'Unverified' || $status != 'Verified') {
+                        $statusClass = 'unverified'; // If status is 'Unverified' or not 'Verified', set to orange
+                    } else {
+                        $statusClass = 'verified'; // Otherwise, set to green
+                    }
 
                     echo '<tr class="' . $statusClass . '">
             <th scope="row" style="white-space: nowrap; text-align: center;"><center>' . $timestamp . '</center></th>
@@ -489,8 +492,14 @@ $stmt->close();
                             // Fetch and display results
                             while ($stmt->fetch()) {
                                 // Set the class based on the status for conditional styling
-                                $statusClass = ($status == 'Unverified' || $status != 'Verified') ? 'unverified' : ($status == 'Rejected' ? 'rejected' : 'verified');
-
+                                $statusClass = '';
+                                if (empty($status)) {
+                                    $statusClass = 'rejected'; // If status is null or empty, set to red
+                                } elseif ($status == 'Unverified' || $status != 'Verified') {
+                                    $statusClass = 'unverified'; // If status is 'Unverified' or not 'Verified', set to orange
+                                } else {
+                                    $statusClass = 'verified'; // Otherwise, set to green
+                                }
                                 echo '<tr class="' . $statusClass . '">
             <th scope="row" style="white-space: nowrap; text-align: center;"><center>' . $timestamp . '</center></th>
             <td style="white-space: nowrap; text-align: center;"><center>' . $username . '</center></td>
